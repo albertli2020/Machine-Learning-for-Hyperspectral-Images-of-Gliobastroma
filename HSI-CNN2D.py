@@ -24,7 +24,7 @@ def getImagePathsWithLabelsTwoLevels(path):
                     full_path = os.path.join(level_one_path, level_two_entry)
                     if os.path.isdir(full_path):
                         paths.append(full_path + "/raw.hdr")
-                        if level_one_path.endswith("_T"):
+                        if level_two_entry.endswith("_T"):
                             labels.append(1)
                         else:
                             labels.append(0) 
