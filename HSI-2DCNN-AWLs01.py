@@ -64,7 +64,7 @@ def getCalibratedImage(image_path):
     return (raw_hyperspectral_image-dark_reference)/(white_reference-dark_reference)
 
 
-def reduceBand(hyperspectral_image, n = 3):
+def band_reduction(hyperspectral_image, wavelengths, n = 3):
     """Perform the band reduction to the hyperspectral cube
 
     Parameters
@@ -88,8 +88,8 @@ def reduceBand(hyperspectral_image, n = 3):
     w = np.ones(n)/n
     moving_averaged_image = scipy.ndimage.convolve1d(hyperspectral_image, w, axis=2)
     band_reduced_image = moving_averaged_image[:,:,1:-1:n]
-    # wavelength_reduced = wavelenghts[1:-1:n]
-    return band_reduced_image
+    wavelength_reduced = wavelenghts[1:-1:n]
+    return band_reduced_image, wavelength_reduced
 
 # Hyperspectral Dataset Class
 class HyperspectralDataset(Dataset):
@@ -137,14 +137,12 @@ class HyperspectralDataset(Dataset):
         label = self.labels[idx]
         # raw_image = self.load_hyperspectral_image(image_path)
         reduced_image = getCalibratedImage(image_path)
-        # band_reduced_image = self.select_channels(reduced_image)
-        band_reduced_image = reduceBand(reduced_image, 3) 
-        normalized_image = self.normalize(band_reduced_image) 
+        band_reduced_image = self.select_channels(reduced_image)  
+        normalized_image = self.normalize(band_reduced_image)
         patches = self.extract_patches(normalized_image)
         
         patches_np = np.array(patches)
-        # tensor_patches = torch.from_numpy(patches_np).permute(0, 3, 1, 2).float()
-        tensor_patches = torch.from_numpy(patches_np).permute(0, 3, 1, 2).half()
+        tensor_patches = torch.from_numpy(patches_np).permute(0, 3, 1, 2).float()
         # Convert patches and labels to tensors
         # tensor_patches = torch.tensor(patches).permute(0, 3, 1, 2).float()
         tensor_labels = torch.full((tensor_patches.shape[0],), label, dtype=torch.long, device=self.gpu_device)
@@ -200,7 +198,7 @@ image_paths, labels = getImagePathsWithLabels(root_dir)
 # Initialize the dataset and DataLoader
 # dataset = HyperspectralDataset(image_paths, labels, wavelengths, target_ranges, patch_size, blank_threshold=0.5, gpu_device=gpu_device)
 # train_loader = data.DataLoader(dataset, batch_size=32, shuffle=True, collate_fn=lambda x: (torch.cat([item[0] for item in x]), torch.cat([item[1] for item in x])))
-input_channels = 826//3
+input_channels = len(wavelengths)
 
 # Split data for training and validation
 # Step 1: Split the data into 60% train and 40% temporary (validation + test)
@@ -244,9 +242,8 @@ epochs = 10
 last_epoch_time = end_time1
 for epoch in range(epochs):
 
-    model = model.half()
     model.train()
-    
+
     running_loss = 0.0
 
     batch_index = 0
@@ -284,9 +281,9 @@ for epoch in range(epochs):
     va = correct / total
     print(f"Epoch [{epoch+1}/{epochs}], "
 
-          f"Train Loss: {tl:.2f}, "
+          f"Train Loss: {tl:.4f}, "
 
-          f"Val Loss: {vl:.2f}, "
+          f"Val Loss: {vl:.4f}, "
 
           f"Val Accuracy: {100 * va:.2f}%,",
           f"Time Taken: {(this_epoch_time-last_epoch_time):.4f}")
