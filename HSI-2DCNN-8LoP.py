@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 This Python program uses incremental learning through layer-wise expansion.
 Similar to Progressive GANs, layers are added gradually to a network during training.
 The progressive complexity growing scheme inherits parameters from simpler (less-layered) networks to initialize deeper (more-layered) ones.
-An up-to 8 layer 2D CNN is built progressively in a hierarchical fashionon, with HSI patches of shape (87, 87, 275) * float32.
+An up-to 8 layer 2D CNN is built progressively in a hierarchical fashion, with HSI patches of shape (87, 87, 275) * float32.
 """
 data_root_dir = "ntp_90_90_275/"
 sampled_data_percentage = 100
@@ -34,6 +34,10 @@ mlp_steps = [
     {'desc':'3-L to 4-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.00005, 'noe':8},
     {'desc':'4-L to 5-L, TVT', 'nol_from':5, 'nol_new':6, 'lr':0.00001, 'noe':8}
     ]
+
+mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
+testonly_patients = ["P7", "P11", "P6", "P1"]
+run_testonly = False
 
 def generatePatchListsByPatient(path, training_patients=[]):
     patient_patch_dict = {}
@@ -326,13 +330,20 @@ class HyperspectralNetworkTrainer():
         self.target_val_accuracy = 0.65
         # Initialize model
         self.input_bands = input_bands
-        if num_layers_of_inherited_model > 0:
-            pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
-            pretrained_model.load_state_dict(torch.load(f'ByPatients_{num_layers_of_inherited_model}LoP_best_model.pth'))            
-        else:
+        if num_layers_of_inherited_model == 0:
             pretrained_model = None
+        else:
+            if num_layers_of_inherited_model == -1:                
+                # test-only; parameters will be loaded at test time.
+                pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=my_num_layer)         
+            else:
+                pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
+                pretrained_model.load_state_dict(torch.load(f'ByPatients_{num_layers_of_inherited_model}LoP_best_model.pth'))            
         
-        if num_layers_of_inherited_model == my_num_layer:
+        if num_layers_of_inherited_model == -1:
+            print(f"Test only with model parameters to be loaded from {self.model_save_file}")
+            self.model = pretrained_model
+        elif num_layers_of_inherited_model == my_num_layer:
             # Attempt to fine-train the model of same numer of layers
             print(f"Fine-train with lower LR={learning_rate}, starting at the last saved best model parameters.")
             self.model = pretrained_model
@@ -347,11 +358,12 @@ class HyperspectralNetworkTrainer():
         if gpu_device is not None:
             self.model.to(gpu_device)
 
-        #Initialize loss function and optimizer
-        print(f"Class weight Ratio = {class_weight_ratio:.4f}")
-        class_weights = torch.tensor([class_weight_ratio], dtype=torch.float32, device=gpu_device)
-        self.criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights) #For binary classification, this is perferred over nn.CrossEntropyLoss(weight=class_weights)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
+        #Initialize loss function and optimizer. These are not necessary for test-only.
+        if num_layers_of_inherited_model >= 0:
+            print(f"Class weight Ratio = {class_weight_ratio:.4f}")
+            class_weights = torch.tensor([class_weight_ratio], dtype=torch.float32, device=gpu_device)
+            self.criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights) #For binary classification, this is perferred over nn.CrossEntropyLoss(weight=class_weights)
+            self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
     def train_with_validation(self, train_dataset, val_dataset, loss_th_to_stop=0.005, accrucy_th_to_stop=0.99, epochs=100):
         train_start_time = time.time()
@@ -493,48 +505,65 @@ else:
 
 data_loading_start_time = time.time()
 print(f"sampled_data_percentage={sampled_data_percentage:.2f}%; patch_size={g_patch_size}; spectral_bands_to_use={input_spectral_bands}")
-trn_patients = ["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"]
-val_patients = ["P1"]
-tst_patients = ["P7", "P11"]
-patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
-training_set, training_labels, validation_set, validation_labels, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
+if run_testonly:
+    trn_patients = []
+    val_patients = []
+    patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
+    trainer = HyperspectralNetworkTrainer(mlp_testonly['nol'], gpu_device=g_gpu_device, num_layers_of_inherited_model=-1)
+    for tst_patient in testonly_patients:
+        _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
+                                            trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
+        print("Test Patient:", tst_patient, " Patch Image Distribution: ", str(len(test_set)))
+        test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
+        local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
+        print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
+        trainer.test_model(test_dataset)
+        print("----------------------")
+        print(" ")
+else:        
+    trn_patients = ["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"]
+    val_patients = ["P1"]
+    tst_patients = ["P7", "P11"]
+    patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
+    training_set, training_labels, validation_set, validation_labels, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
                                                                                                 trn_patients, val_patients, tst_patients,
                                                                                                 data_precentage=sampled_data_percentage/100.0)
-'''
-print(training_set)
-print(training_labels)
-print(validation_set)
-print(validation_labels)
-print(test_set)
-print(test_labels)
-'''
-train_class_counts = Counter(training_labels)
-print("Training Patients:", trn_patients, "Validation Patients:", val_patients, "Test Patients:", tst_patients)
-print(f"[Training vs Validation vs Test] Patch Image Distribution: " + str(len(training_set)) + " " + str(len(validation_set)) + " " + str(len(test_set)))
-print(f"Training True label distribution [0: Non-Tumor; 1: Tumor]:", train_class_counts, Counter(validation_labels), Counter(test_labels))
-train_dataset = HyperspectralDataset(training_set, training_labels, randomize_pos_data=True, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
-val_dataset = HyperspectralDataset(validation_set, validation_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
-test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
-data_loading_end_time = time.time()
-print(f"Elapsed seconds for data loading into model: {(data_loading_end_time - data_loading_start_time):.2f}")
+    '''
+    print(training_set)
+    print(training_labels)
+    print(validation_set)
+    print(validation_labels)
+    print(test_set)
+    print(test_labels)
+    '''
+    train_class_counts = Counter(training_labels)
+    print("Training Patients:", trn_patients, "Validation Patients:", val_patients, "Test Patients:", tst_patients)
+    print(f"[Training vs Validation vs Test] Patch Image Distribution: " + str(len(training_set)) + " " + str(len(validation_set)) + " " + str(len(test_set)))
+    print(f"Training True label distribution [0: Non-Tumor; 1: Tumor]:", train_class_counts, Counter(validation_labels), Counter(test_labels))
+    train_dataset = HyperspectralDataset(training_set, training_labels, randomize_pos_data=True, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
+    val_dataset = HyperspectralDataset(validation_set, validation_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
+    test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
 
-for s in mlp_steps:
-    # Convert current time to local time and format it
-    local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
-    print(f"{s['desc']} starts at Pacific Time: {local_time}")
-    model_num_layers = s['nol_new']
-    from_model_nl = s['nol_from']
-    training_lr = s['lr']
-    num_epoches = s['noe']
-    print(f"Num_layers={model_num_layers}; Training_LR={training_lr:.6f}; Batch_Size={g_batch_size}; Num_Epoches={num_epoches}")
-    trainer = HyperspectralNetworkTrainer(model_num_layers, class_weight_ratio = train_class_counts[0] / train_class_counts[1],
-                                    gpu_device=g_gpu_device, learning_rate=training_lr, num_layers_of_inherited_model=from_model_nl)
-    is_trained_well = trainer.train_with_validation(train_dataset, val_dataset,
-                                  loss_th_to_stop=0.025, accrucy_th_to_stop=0.98, epochs=num_epoches)
-    if is_trained_well:
-        trainer.test_model(test_dataset)
-    else:
-        print("The most recent training and validation process didn't converge enough to run the test process.")
-    
-    print("----------------------")
-    print(" ")
+    data_loading_end_time = time.time()
+    print(f"Elapsed seconds for data loading: {(data_loading_end_time - data_loading_start_time):.2f}")
+
+    for s in mlp_steps:
+        # Convert current time to local time and format it
+        local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
+        print(f"{s['desc']} starts at Pacific Time: {local_time}")
+        model_num_layers = s['nol_new']
+        from_model_nl = s['nol_from']
+        training_lr = s['lr']
+        num_epoches = s['noe']
+        print(f"Num_layers={model_num_layers}; Training_LR={training_lr:.6f}; Batch_Size={g_batch_size}; Num_Epoches={num_epoches}")
+        trainer = HyperspectralNetworkTrainer(model_num_layers, class_weight_ratio = train_class_counts[0] / train_class_counts[1],
+                                        gpu_device=g_gpu_device, learning_rate=training_lr, num_layers_of_inherited_model=from_model_nl)
+        is_trained_well = trainer.train_with_validation(train_dataset, val_dataset,
+                                      loss_th_to_stop=0.025, accrucy_th_to_stop=0.98, epochs=num_epoches)
+        if is_trained_well:
+            trainer.test_model(test_dataset)
+        else:
+            print("The most recent training and validation process didn't converge enough to run the test process.")
+
+        print("----------------------")
+        print(" ")
