@@ -28,11 +28,12 @@ g_batch_size = 24
 
 # Define the steps of machine learning processing of HSI data patches
 mlp_steps = [
-    {'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
-    {'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
-    {'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
-    {'desc':'3-L to 4-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.00005, 'noe':8},
-    {'desc':'4-L to 5-L, TVT', 'nol_from':5, 'nol_new':6, 'lr':0.00001, 'noe':8}
+    #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
+    #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
+    #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
+    #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.00001, 'noe':8}
     ]
 
 mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
@@ -327,7 +328,7 @@ class HyperspectralNetworkTrainer():
         my_num_layer = num_layers
         self.gpu_device = gpu_device
         self.model_save_file = f'ByPatients_{my_num_layer}LoP_best_model.pth'
-        self.target_val_accuracy = 0.65
+        self.target_accuracy = 0.65
         # Initialize model
         self.input_bands = input_bands
         if num_layers_of_inherited_model == 0:
