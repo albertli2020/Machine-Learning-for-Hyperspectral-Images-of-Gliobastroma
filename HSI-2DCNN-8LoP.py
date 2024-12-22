@@ -31,14 +31,13 @@ mlp_steps = [
     #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
     #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
     #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
-    {'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    {'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.000025, 'noe':4},
-    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.0000125, 'noe':8}
+    #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
     ]
 
 mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
 testonly_patients = ["P7", "P11", "P6", "P1"]
-run_testonly = False #True
+run_testonly = False #True #
 
 # File path for the log
 mlp_log_file_path = "mlp_pnn_training_log_file.txt"
@@ -519,7 +518,10 @@ class HyperspectralNetworkTrainer():
             raise ValueError("The confusion matrix does not have a 2x2 shape, which is required for binary classification.")
 
         # Calculate AUC
-        auc = roc_auc_score(all_labels, all_scores)
+        if len(set(all_labels)) < 2:
+            auc = -0.0
+        else:
+            auc = roc_auc_score(all_labels, all_scores)
 
         # Accuracy
         accuracy = accuracy_score(all_labels, all_preds)
@@ -562,7 +564,7 @@ if run_testonly:
     for tst_patient in testonly_patients:
         _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
                                             trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
-        print("Test Patient:", tst_patient, " Patch Image Distribution: ", str(len(test_set)))
+        print("Test Patient:", tst_patient, " with ", str(len(test_set)), " accepted patches.")
         test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
         local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
         print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
