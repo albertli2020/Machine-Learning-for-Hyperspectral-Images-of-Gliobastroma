@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
 import numpy as np
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, confusion_matrix, log_loss, classification_report
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, confusion_matrix, log_loss, classification_report, roc_auc_score
 import os
 import random
 import glob
@@ -31,14 +31,42 @@ mlp_steps = [
     #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
     #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
     #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
-    #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    {'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.00001, 'noe':8}
+    {'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.000025, 'noe':4},
+    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.0000125, 'noe':8}
     ]
 
 mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
 testonly_patients = ["P7", "P11", "P6", "P1"]
-run_testonly = False
+run_testonly = False #True
+
+# File path for the log
+mlp_log_file_path = "mlp_pnn_training_log_file.txt"
+
+def read_log_file(file_path):
+    """Read the log file and construct a dictionary."""
+    log_data = {}
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            for line in file:
+                line = line.strip()
+                if line:  # Skip empty lines
+                    nol, fn, last_saved, avg_loss, avg_accuracy = line.split(",")
+                    log_data[int(nol)] = {
+                        "nol": int(nol),
+                        "fn": fn,
+                        "last_saved": last_saved,
+                        "avg_loss": float(avg_loss),
+                        "avg_accuracy": float(avg_accuracy),
+                    }
+    return log_data
+
+def update_log_file(file_path, data):
+    """Write updated log data back to the file."""
+    with open(file_path, "w") as file:
+        for key, record in data.items():
+            line = f"{record['nol']},{record['fn']},{record['last_saved']},{record['avg_loss']},{record['avg_accuracy']}\n"
+            file.write(line)
 
 def generatePatchListsByPatient(path, training_patients=[]):
     patient_patch_dict = {}
@@ -325,9 +353,9 @@ class TumorClassifierCNN(nn.Module):
 
 class HyperspectralNetworkTrainer():
     def __init__(self, num_layers, input_bands=range(0,input_spectral_bands), class_weight_ratio=1.0, gpu_device=None, learning_rate=0.0001, num_layers_of_inherited_model=0):
-        my_num_layer = num_layers
+        self.my_num_layer = num_layers
         self.gpu_device = gpu_device
-        self.model_save_file = f'ByPatients_{my_num_layer}LoP_best_model.pth'
+        self.model_save_file = f'ByPatients_{self.my_num_layer}LoP_best_model.pth'
         self.target_accuracy = 0.65
         # Initialize model
         self.input_bands = input_bands
@@ -336,7 +364,7 @@ class HyperspectralNetworkTrainer():
         else:
             if num_layers_of_inherited_model == -1:                
                 # test-only; parameters will be loaded at test time.
-                pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=my_num_layer)         
+                pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=self.my_num_layer)         
             else:
                 pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
                 pretrained_model.load_state_dict(torch.load(f'ByPatients_{num_layers_of_inherited_model}LoP_best_model.pth'))            
@@ -344,7 +372,7 @@ class HyperspectralNetworkTrainer():
         if num_layers_of_inherited_model == -1:
             print(f"Test only with model parameters to be loaded from {self.model_save_file}")
             self.model = pretrained_model
-        elif num_layers_of_inherited_model == my_num_layer:
+        elif num_layers_of_inherited_model == self.my_num_layer:
             # Attempt to fine-train the model of same numer of layers
             print(f"Fine-train with lower LR={learning_rate}, starting at the last saved best model parameters.")
             self.model = pretrained_model
@@ -353,7 +381,7 @@ class HyperspectralNetworkTrainer():
                 print(f"Train with LR={learning_rate}, starting from scratch.")
             else:
                 print(f"Train with LR={learning_rate}, starting by inheriting saved best model parameters from a less-layered network.")
-            self.model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=my_num_layer, inherited_model=pretrained_model)
+            self.model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=self.my_num_layer, inherited_model=pretrained_model)
 
         # This model.to() step might not be needed as the CNN instantiation above was executed with gpu_device specified.
         if gpu_device is not None:
@@ -367,9 +395,16 @@ class HyperspectralNetworkTrainer():
             self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
     def train_with_validation(self, train_dataset, val_dataset, loss_th_to_stop=0.005, accrucy_th_to_stop=0.99, epochs=100):
+        # Read the log file
+        log_data = read_log_file(mlp_log_file_path)
+
         train_start_time = time.time()
-        best_loss = float('inf')  # Track the best validation loss for model saving
-        best_accuracy = 0.0 
+        if self.my_num_layer in log_data:
+            best_loss = log_data[self.my_num_layer]["avg_loss"]
+            best_accuracy = log_data[self.my_num_layer]["avg_accuracy"]
+        else:
+            best_loss = float('inf')  # Track the best validation loss for model saving
+            best_accuracy = 0.0 
         target_met = False
 
         epoch_start_time = train_start_time
@@ -434,6 +469,14 @@ class HyperspectralNetworkTrainer():
                 target_met = True
                 torch.save(self.model.state_dict(), self.model_save_file)
                 print(f"Trained model saved to {self.model_save_file} w/ avg loss: {best_loss:.4f}, avg accuracy: {100*best_accuracy:.4f}%")
+                log_data[self.my_num_layer] = {
+                    "nol": self.my_num_layer,
+                    "fn": self.model_save_file,
+                    "last_saved": datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y_%H:%M:%S_PT'),
+                    "avg_loss": best_loss,
+                    "avg_accuracy": best_accuracy,
+                }
+                update_log_file(mlp_log_file_path, log_data)
                 if (trn_loss < loss_th_to_stop) and (val_loss < loss_th_to_stop) and (trn_accuracy > accrucy_th_to_stop) and (val_accuracy > accrucy_th_to_stop):
                     break
 
@@ -445,6 +488,7 @@ class HyperspectralNetworkTrainer():
         test_start_time = time.time()
         all_labels = []
         all_preds = []
+        all_scores = []
         if load_model_from_best_saved:
             if explicit_prev_saved_model_file is None:
                 self.model.load_state_dict(torch.load(self.model_save_file))
@@ -456,7 +500,8 @@ class HyperspectralNetworkTrainer():
             for batch_idx in range(len(dataset)):
                 X_batch, y_batch = dataset[batch_idx]  # X_batch shape: (batch_size, num_features)
                 outputs = self.model(X_batch).squeeze()
-                y_pred_batch = (outputs > 0.5).float()        
+                y_pred_batch = (outputs > 0.5).float()
+                all_scores.extend(outputs.cpu().numpy())
                 all_labels.extend(y_batch.cpu().numpy())
                 all_preds.extend(y_pred_batch.cpu().numpy())
 
@@ -473,6 +518,9 @@ class HyperspectralNetworkTrainer():
             print(cm.shape)
             raise ValueError("The confusion matrix does not have a 2x2 shape, which is required for binary classification.")
 
+        # Calculate AUC
+        auc = roc_auc_score(all_labels, all_scores)
+
         # Accuracy
         accuracy = accuracy_score(all_labels, all_preds)
         # Sensitivity (Recall or True Positive Rate)
@@ -481,11 +529,11 @@ class HyperspectralNetworkTrainer():
         specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
         # Precision
         precision = precision_score(all_labels, all_preds, pos_label=1, zero_division=0)
-        print(f"Test accuracy, sensitivity (recall), specificity, Precision are: {accuracy*100:.4f}%, {sensitivity*100:.4f}%, {specificity*100:.4f}%, {precision*100:.4f}%")
+        print(f"AUC, Test accuracy, sensitivity (recall), specificity, Precision are: {auc:.4f}, {accuracy*100:.4f}%, {sensitivity*100:.4f}%, {specificity*100:.4f}%, {precision*100:.4f}%")
 
         # Print detailed metrics
         print("Classification Report:")
-        print(classification_report(all_labels, all_preds))
+        print(classification_report(all_labels, all_preds, zero_division=0))  # Use 0 for undefined metrics
 
         print("Confusion Matrix:")
         print(confusion_matrix(all_labels, all_preds))
