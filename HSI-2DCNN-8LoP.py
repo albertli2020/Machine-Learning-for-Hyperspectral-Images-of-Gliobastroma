@@ -32,10 +32,11 @@ mlp_steps = [
     #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
     #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
     #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
+    #{'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
+    {'desc':'5-L to 5-L, TVT', 'nol_from':5, 'nol_new':5, 'lr':0.00001, 'noe':8}
     ]
 
-mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
+mlp_testonly = {'desc':'5-L Test-only', 'nol':5}
 testonly_patients = ["P7", "P11", "P6", "P1"]
 run_testonly = False #True #
 
@@ -386,7 +387,7 @@ class HyperspectralNetworkTrainer():
         if gpu_device is not None:
             self.model.to(gpu_device)
 
-        #Initialize loss function and optimizer. These are not necessary for test-only.
+        #Initialize loss function and optimizer. These are not needed for test-only.
         if num_layers_of_inherited_model >= 0:
             print(f"Class weight Ratio = {class_weight_ratio:.4f}")
             class_weights = torch.tensor([class_weight_ratio], dtype=torch.float32, device=gpu_device)

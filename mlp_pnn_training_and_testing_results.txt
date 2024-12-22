@@ -1,0 +1,489 @@
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+Training Patients: ['P2', 'P3', 'P4', 'P5', 'P8', 'P9', 'P10', 'P12', 'P13'] Validation Patients: ['P1'] Test Patients: ['P7', 'P11']
+[Training vs Validation vs Test] Patch Image Distribution: 31188 4336 2560
+Training True label distribution [0: Non-Tumor; 1: Tumor]: Counter({1: 17938, 0: 13250}) Counter({0: 3307, 1: 1029}) Counter({1: 2299, 0: 261})
+Elapsed seconds for data loading into model: 0.33
+Starting Training at Pacific Time:  12-20-2024 10:11:25
+Num_layers=1; Training_LR=0.002000; batch_size=24; sampled_data_percentage=100.00%; patch_size=87
+Train with LR=0.002, starting from scratch.
+Class weight Ratio = 0.7387
+Epoch [1/18], TL: 6.6371, TA: 81.5859%, last batch loss: 0.2587;VL: 3.4165, VA: 90.5212%;  Seconds Taken: 778.57
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 5.0268, and avg accuracy: 86.0535%
+Epoch [2/18], TL: 4.7164, TA: 86.9148%, last batch loss: 0.3526;VL: 5.1455, VA: 85.7242%;  Seconds Taken: 776.99
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 4.9310, and avg accuracy: 86.3195%
+Epoch [3/18], TL: 4.5511, TA: 87.3733%, last batch loss: 0.2609;VL: 4.5720, VA: 87.3155%;  Seconds Taken: 775.33
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 4.5615, and avg accuracy: 87.3444%
+Epoch [4/18], TL: 4.3639, TA: 87.8928%, last batch loss: 0.2075;VL: 3.7656, VA: 89.5526%;  Seconds Taken: 775.93
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 4.0648, and avg accuracy: 88.7227%
+Epoch [5/18], TL: 4.0565, TA: 88.7457%, last batch loss: 0.1230;VL: 1.9368, VA: 94.6264%;  Seconds Taken: 775.27
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.9967, and avg accuracy: 91.6860%
+Epoch [6/18], TL: 3.9247, TA: 89.1112%, last batch loss: 0.1170;VL: 1.9535, VA: 94.5803%;  Seconds Taken: 775.19
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.9391, and avg accuracy: 91.8457%
+Epoch [7/18], TL: 3.8981, TA: 89.1849%, last batch loss: 0.1045;VL: 1.8288, VA: 94.9262%;  Seconds Taken: 775.50
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.8635, and avg accuracy: 92.0556%
+Epoch [8/18], TL: 3.7294, TA: 89.6531%, last batch loss: 0.1130;VL: 2.0366, VA: 94.3496%;  Seconds Taken: 775.52
+Epoch [9/18], TL: 3.6058, TA: 89.9962%, last batch loss: 0.0914;VL: 2.0117, VA: 94.4188%;  Seconds Taken: 775.29
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.8087, and avg accuracy: 92.2075%
+Epoch [10/18], TL: 3.4370, TA: 90.4643%, last batch loss: 0.0924;VL: 2.0532, VA: 94.3035%;  Seconds Taken: 774.86
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.7451, and avg accuracy: 92.3839%
+Epoch [11/18], TL: 3.4128, TA: 90.5316%, last batch loss: 0.0870;VL: 2.1696, VA: 93.9806%;  Seconds Taken: 774.78
+Epoch [12/18], TL: 3.3411, TA: 90.7304%, last batch loss: 0.0860;VL: 2.0615, VA: 94.2804%;  Seconds Taken: 775.72
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.7013, and avg accuracy: 92.5054%
+Epoch [13/18], TL: 3.2729, TA: 90.9196%, last batch loss: 0.0903;VL: 2.1862, VA: 93.9345%;  Seconds Taken: 775.68
+Epoch [14/18], TL: 3.2429, TA: 91.0029%, last batch loss: 0.0902;VL: 2.0615, VA: 94.2804%;  Seconds Taken: 775.53
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.6522, and avg accuracy: 92.6417%
+Epoch [15/18], TL: 3.2625, TA: 90.9484%, last batch loss: 0.1105;VL: 2.8429, VA: 92.1125%;  Seconds Taken: 775.54
+Epoch [16/18], TL: 3.2221, TA: 91.0607%, last batch loss: 0.0962;VL: 2.2777, VA: 93.6808%;  Seconds Taken: 774.91
+Epoch [17/18], TL: 3.1296, TA: 91.3172%, last batch loss: 0.0651;VL: 1.7207, VA: 95.2260%;  Seconds Taken: 774.27
+Trained model saved to ByPatients_1LoP_best_model.pth w/ avg loss: 2.4252, and avg accuracy: 93.2716%
+Epoch [18/18], TL: 3.0545, TA: 91.5256%, last batch loss: 0.0875;VL: 2.0699, VA: 94.2574%;  Seconds Taken: 774.73
+Training Complete. Elapsed seconds for training model: 13959.62
+Seconds taken to complete Testing: 44.60
+True label distribution: Counter({1.0: 2299, 0.0: 261})
+Predicted label distribution: Counter({1.0: 1602, 0.0: 958})
+True Neg, False Pos, False Neg, True Pos are:  257 4 701 1598
+Accuracy: 0.724609375
+Sensitivity (Recall): 0.6950848194867334
+Specificity: 0.9846743295019157
+Precision: 0.9975031210986267
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.27      0.98      0.42       261
+         1.0       1.00      0.70      0.82      2299
+
+    accuracy                           0.72      2560
+   macro avg       0.63      0.84      0.62      2560
+weighted avg       0.92      0.72      0.78      2560
+
+Confusion Matrix:
+[[ 257    4]
+ [ 701 1598]]
+Starting Training at Pacific Time:  12-20-2024 10:11:25
+Num_layers=2; Training_LR=0.001000; batch_size=24; sampled_data_percentage=100.00%; patch_size=87
+Train with LR=0.001, starting by inheriting saved best model parameters from a lower network.
+Class weight Ratio = 0.7387
+Epoch [1/22], TL: 3.1504, TA: 91.2595%, last batch loss: 0.0845;VL: 2.0699, VA: 94.2574%;  Seconds Taken: 958.60
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.6101, and avg accuracy: 92.7584%
+Epoch [2/22], TL: 2.8222, TA: 92.1701%, last batch loss: 0.0795;VL: 1.9950, VA: 94.4649%;  Seconds Taken: 959.03
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.4086, and avg accuracy: 93.3175%
+Epoch [3/22], TL: 2.8476, TA: 92.0995%, last batch loss: 0.0703;VL: 1.8870, VA: 94.7648%;  Seconds Taken: 959.61
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.3673, and avg accuracy: 93.4321%
+Epoch [4/22], TL: 2.6558, TA: 92.6318%, last batch loss: 0.0710;VL: 2.4855, VA: 93.1042%;  Seconds Taken: 959.02
+Epoch [5/22], TL: 2.5922, TA: 92.8081%, last batch loss: 0.0635;VL: 1.8953, VA: 94.7417%;  Seconds Taken: 959.58
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.2437, and avg accuracy: 93.7749%
+Epoch [6/22], TL: 2.4662, TA: 93.1576%, last batch loss: 0.0682;VL: 1.7872, VA: 95.0415%;  Seconds Taken: 958.31
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.1267, and avg accuracy: 94.0996%
+Epoch [7/22], TL: 2.2813, TA: 93.6706%, last batch loss: 0.0421;VL: 1.7457, VA: 95.1568%;  Seconds Taken: 958.85
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 2.0135, and avg accuracy: 94.4137%
+Epoch [8/22], TL: 2.2490, TA: 93.7604%, last batch loss: 0.1158;VL: 1.8953, VA: 94.7417%;  Seconds Taken: 958.75
+Epoch [9/22], TL: 2.1947, TA: 93.9111%, last batch loss: 0.0895;VL: 2.6684, VA: 92.5969%;  Seconds Taken: 958.33
+Epoch [10/22], TL: 2.1230, TA: 94.1099%, last batch loss: 0.0491;VL: 1.9119, VA: 94.6956%;  Seconds Taken: 958.93
+Epoch [11/22], TL: 2.0444, TA: 94.3279%, last batch loss: 0.0405;VL: 1.8288, VA: 94.9262%;  Seconds Taken: 958.13
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 1.9366, and avg accuracy: 94.6271%
+Epoch [12/22], TL: 2.0097, TA: 94.4241%, last batch loss: 0.0413;VL: 1.9036, VA: 94.7186%;  Seconds Taken: 958.72
+Epoch [13/22], TL: 1.9866, TA: 94.4883%, last batch loss: 0.0401;VL: 1.9202, VA: 94.6725%;  Seconds Taken: 958.50
+Epoch [14/22], TL: 1.9705, TA: 94.5332%, last batch loss: 0.0399;VL: 1.9867, VA: 94.4880%;  Seconds Taken: 957.42
+Epoch [15/22], TL: 1.8896, TA: 94.7576%, last batch loss: 0.0341;VL: 1.9701, VA: 94.5341%;  Seconds Taken: 958.66
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 1.9298, and avg accuracy: 94.6459%
+Epoch [16/22], TL: 1.9023, TA: 94.7223%, last batch loss: 0.0297;VL: 1.8537, VA: 94.8570%;  Seconds Taken: 958.81
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 1.8780, and avg accuracy: 94.7897%
+Epoch [17/22], TL: 1.9046, TA: 94.7159%, last batch loss: 0.0316;VL: 1.9368, VA: 94.6264%;  Seconds Taken: 958.69
+Epoch [18/22], TL: 1.7647, TA: 95.1039%, last batch loss: 0.0306;VL: 2.1031, VA: 94.1651%;  Seconds Taken: 958.23
+Epoch [19/22], TL: 1.7509, TA: 95.1424%, last batch loss: 0.0277;VL: 2.0532, VA: 94.3035%;  Seconds Taken: 958.76
+Epoch [20/22], TL: 1.7832, TA: 95.0526%, last batch loss: 0.0317;VL: 2.0865, VA: 94.2113%;  Seconds Taken: 958.58
+Epoch [21/22], TL: 1.7936, TA: 95.0237%, last batch loss: 0.0329;VL: 1.9784, VA: 94.5111%;  Seconds Taken: 957.48
+Epoch [22/22], TL: 1.7174, TA: 95.2353%, last batch loss: 0.0280;VL: 1.9452, VA: 94.6033%;  Seconds Taken: 957.63
+Trained model saved to ByPatients_2LoP_best_model.pth w/ avg loss: 1.8313, and avg accuracy: 94.9193%
+Training Complete. Elapsed seconds for training model: 21088.61
+Seconds taken to complete Testing: 48.58
+True label distribution: Counter({1.0: 2299, 0.0: 261})
+Predicted label distribution: Counter({1.0: 1839, 0.0: 721})
+True Neg, False Pos, False Neg, True Pos are:  243 18 478 1821
+Accuracy: 0.80625
+Sensitivity (Recall): 0.7920835145715528
+Specificity: 0.9310344827586207
+Precision: 0.9902120717781403
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.34      0.93      0.49       261
+         1.0       0.99      0.79      0.88      2299
+
+    accuracy                           0.81      2560
+   macro avg       0.66      0.86      0.69      2560
+weighted avg       0.92      0.81      0.84      2560
+
+Confusion Matrix:
+[[ 243   18]
+ [ 478 1821]]
+Starting Training at Pacific Time:  12-20-2024 10:11:25
+Num_layers=3; Training_LR=0.000250; batch_size=24; sampled_data_percentage=100.00%; patch_size=87
+Train with LR=0.00025, starting by inheriting saved best model parameters from a lower network.
+Class weight Ratio = 0.7387
+Epoch [1/28], TL: 1.5278, TA: 95.7612%, last batch loss: 0.0104;VL: 1.9368, VA: 94.6264%;  Seconds Taken: 1305.70
+Trained model saved to ByPatients_3LoP_best_model.pth w/ avg loss: 1.7323, and avg accuracy: 95.1938%
+Epoch [2/28], TL: 1.2447, TA: 96.5467%, last batch loss: 0.0026;VL: 1.9701, VA: 94.5341%;  Seconds Taken: 1304.53
+Trained model saved to ByPatients_3LoP_best_model.pth w/ avg loss: 1.6074, and avg accuracy: 95.5404%
+Epoch [3/28], TL: 1.0956, TA: 96.9604%, last batch loss: 0.0014;VL: 1.8870, VA: 94.7648%;  Seconds Taken: 1304.65
+Trained model saved to ByPatients_3LoP_best_model.pth w/ avg loss: 1.4913, and avg accuracy: 95.8626%
+Epoch [4/28], TL: 1.0309, TA: 97.1399%, last batch loss: 0.0015;VL: 1.9368, VA: 94.6264%;  Seconds Taken: 1305.59
+Trained model saved to ByPatients_3LoP_best_model.pth w/ avg loss: 1.4839, and avg accuracy: 95.8832%
+Epoch [5/28], TL: 0.9893, TA: 97.2554%, last batch loss: 0.0010;VL: 2.4190, VA: 93.2887%;  Seconds Taken: 1304.71
+Epoch [6/28], TL: 0.9061, TA: 97.4862%, last batch loss: 0.0015;VL: 2.7931, VA: 92.2509%;  Seconds Taken: 1305.39
+Epoch [7/28], TL: 0.8494, TA: 97.6433%, last batch loss: 0.0014;VL: 3.2170, VA: 91.0747%;  Seconds Taken: 1305.81
+Epoch [8/28], TL: 0.7882, TA: 97.8133%, last batch loss: 0.0012;VL: 3.9402, VA: 89.0683%;  Seconds Taken: 1305.80
+Epoch [9/28], TL: 0.7500, TA: 97.9191%, last batch loss: 0.0006;VL: 3.6908, VA: 89.7601%;  Seconds Taken: 1304.94
+Epoch [10/28], TL: 0.7061, TA: 98.0409%, last batch loss: 0.0005;VL: 4.4639, VA: 87.6153%;  Seconds Taken: 1309.03
+Epoch [11/28], TL: 0.6819, TA: 98.1082%, last batch loss: 0.0006;VL: 4.0981, VA: 88.6301%;  Seconds Taken: 1307.21
+Epoch [12/28], TL: 0.7188, TA: 98.0056%, last batch loss: 0.0006;VL: 3.9818, VA: 88.9530%;  Seconds Taken: 1307.68
+Epoch [13/28], TL: 0.6784, TA: 98.1179%, last batch loss: 0.0004;VL: 4.4140, VA: 87.7537%;  Seconds Taken: 1307.12
+Epoch [14/28], TL: 0.6229, TA: 98.2718%, last batch loss: 0.0006;VL: 5.7357, VA: 84.0867%;  Seconds Taken: 1307.04
+Epoch [15/28], TL: 0.6310, TA: 98.2493%, last batch loss: 0.0004;VL: 5.7357, VA: 84.0867%;  Seconds Taken: 1307.04
+Epoch [16/28], TL: 0.6033, TA: 98.3263%, last batch loss: 0.0008;VL: 6.0267, VA: 83.2795%;  Seconds Taken: 1307.51
+Epoch [17/28], TL: 0.6079, TA: 98.3135%, last batch loss: 0.0001;VL: 4.9128, VA: 86.3699%;  Seconds Taken: 1305.86
+Epoch [18/28], TL: 0.5859, TA: 98.3744%, last batch loss: 0.0004;VL: 6.9660, VA: 80.6734%;  Seconds Taken: 1306.80
+Epoch [19/28], TL: 0.5755, TA: 98.4032%, last batch loss: 0.0006;VL: 6.2927, VA: 82.5415%;  Seconds Taken: 1307.02
+Epoch [20/28], TL: 0.5594, TA: 98.4481%, last batch loss: 0.0021;VL: 4.2893, VA: 88.0996%;  Seconds Taken: 1307.86
+Epoch [21/28], TL: 0.5501, TA: 98.4738%, last batch loss: 0.0002;VL: 3.9485, VA: 89.0452%;  Seconds Taken: 1307.73
+Epoch [22/28], TL: 0.5293, TA: 98.5315%, last batch loss: 0.0046;VL: 6.7748, VA: 81.2039%;  Seconds Taken: 1307.31
+Epoch [23/28], TL: 0.5143, TA: 98.5732%, last batch loss: 0.0001;VL: 5.4198, VA: 84.9631%;  Seconds Taken: 1307.44
+Epoch [24/28], TL: 0.4981, TA: 98.6181%, last batch loss: 0.0041;VL: 6.2096, VA: 82.7721%;  Seconds Taken: 1306.28
+Epoch [25/28], TL: 0.5027, TA: 98.6052%, last batch loss: 0.0008;VL: 4.9128, VA: 86.3699%;  Seconds Taken: 1307.96
+Epoch [26/28], TL: 0.4993, TA: 98.6149%, last batch loss: 0.0001;VL: 7.0574, VA: 80.4197%;  Seconds Taken: 1307.08
+Epoch [27/28], TL: 0.4993, TA: 98.6149%, last batch loss: 0.0019;VL: 5.4282, VA: 84.9400%;  Seconds Taken: 1307.68
+Epoch [28/28], TL: 0.4461, TA: 98.7623%, last batch loss: 0.0042;VL: 6.2345, VA: 82.7030%;  Seconds Taken: 1307.09
+Training Complete. Elapsed seconds for training model: 36585.89
+Seconds taken to complete Testing: 56.33
+True label distribution: Counter({1.0: 2299, 0.0: 261})
+Predicted label distribution: Counter({1.0: 2160, 0.0: 400})
+True Neg, False Pos, False Neg, True Pos are:  208 53 192 2107
+Accuracy: 0.904296875
+Sensitivity (Recall): 0.916485428447151
+Specificity: 0.7969348659003831
+Precision: 0.975462962962963
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.52      0.80      0.63       261
+         1.0       0.98      0.92      0.95      2299
+
+    accuracy                           0.90      2560
+   macro avg       0.75      0.86      0.79      2560
+weighted avg       0.93      0.90      0.91      2560
+
+Confusion Matrix:
+[[ 208   53]
+ [ 192 2107]]
+Starting Training at Pacific Time:  12-20-2024 10:11:25
+Num_layers=4; Training_LR=0.000025; batch_size=24; sampled_data_percentage=100.00%; patch_size=87
+Train with LR=2.5e-05, starting by inheriting saved best model parameters from a lower network.
+Class weight Ratio = 0.7387
+Epoch [1/16], TL: 1.0690, TA: 97.0341%, last batch loss: 0.0052;VL: 2.1530, VA: 94.0268%;  Seconds Taken: 1978.91
+Trained model saved to ByPatients_4LoP_best_model.pth w/ avg loss: 1.6110, and avg accuracy: 95.5304%
+Epoch [2/16], TL: 0.9419, TA: 97.3868%, last batch loss: 0.0077;VL: 2.4522, VA: 93.1965%;  Seconds Taken: 1980.69
+Epoch [3/16], TL: 0.8749, TA: 97.5728%, last batch loss: 0.0019;VL: 2.7182, VA: 92.4585%;  Seconds Taken: 1987.45
+Epoch [4/16], TL: 0.8067, TA: 97.7620%, last batch loss: 0.0015;VL: 3.0507, VA: 91.5360%;  Seconds Taken: 1980.29
+Epoch [5/16], TL: 0.7847, TA: 97.8229%, last batch loss: 0.0022;VL: 3.3583, VA: 90.6827%;  Seconds Taken: 1981.66
+Epoch [6/16], TL: 0.7593, TA: 97.8934%, last batch loss: 0.0017;VL: 3.8488, VA: 89.3220%;  Seconds Taken: 1981.66
+Epoch [7/16], TL: 0.7165, TA: 98.0121%, last batch loss: 0.0010;VL: 4.2145, VA: 88.3072%;  Seconds Taken: 1983.17
+Epoch [8/16], TL: 0.6969, TA: 98.0666%, last batch loss: 0.0019;VL: 4.1979, VA: 88.3533%;  Seconds Taken: 1980.93
+Epoch [9/16], TL: 0.6691, TA: 98.1435%, last batch loss: 0.0007;VL: 4.2395, VA: 88.2380%;  Seconds Taken: 1982.88
+Epoch [10/16], TL: 0.6553, TA: 98.1820%, last batch loss: 0.0007;VL: 4.3891, VA: 87.8229%;  Seconds Taken: 1983.19
+Epoch [11/16], TL: 0.6356, TA: 98.2365%, last batch loss: 0.0011;VL: 4.5553, VA: 87.3616%;  Seconds Taken: 1983.12
+^CTraceback (most recent call last):
+  File "/Volumes/X31/albert_HistoDL/HSI-2DCNN-8LoP.py", line 755, in <module>
+  File "/Volumes/X31/albert_HistoDL/HSI-2DCNN-8LoP.py", line 550, in train_with_validation
+    for s in mlp_steps:
+KeyboardInterrupt
+
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Training Patients: ['P2', 'P3', 'P4', 'P5', 'P8', 'P9', 'P10', 'P12', 'P13'] Validation Patients: ['P1'] Test Patients: ['P7', 'P11']
+[Training vs Validation vs Test] Patch Image Distribution: 31188 4336 2560
+Training True label distribution [0: Non-Tumor; 1: Tumor]: Counter({1: 17938, 0: 13250}) Counter({0: 3307, 1: 1029}) Counter({1: 2299, 0: 261})
+Elapsed seconds for data loading: 0.86
+3-L to 4-L, TVT starts at Pacific Time: 12-21-2024 17:03:38
+Num_layers=4; Training_LR=0.000050; Batch_Size=24; Num_Epoches=8
+Train with LR=5e-05, starting by inheriting saved best model parameters from a less-layered network.
+Class weight Ratio = 0.7387
+Epoch [1/8], TL: 1.0817, TA: 96.9988%, last batch loss: 0.2957; VL: 1.7373, VA: 95.1799%;  seconds taken: 1968.42
+Trained model saved to ByPatients_4LoP_best_model.pth w/ avg loss: 1.4095, avg accuracy: 96.0894%
+Epoch [2/8], TL: 0.9037, TA: 97.4926%, last batch loss: 0.2185; VL: 1.9701, VA: 94.5341%;  seconds taken: 1982.36
+Epoch [3/8], TL: 0.8575, TA: 97.6209%, last batch loss: 0.2881; VL: 2.1945, VA: 93.9114%;  seconds taken: 1985.64
+^CTraceback (most recent call last): KeyboardInterrupt """ 3L- to 4-L Training Terminated Manually """
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Test only with model parameters to be loaded from ByPatients_4LoP_best_model.pth
+Test Patient: P7  Patch Image Distribution:  1396
+4-L Test-only for P7 starts at Pacific Time: 12-21-2024 18:49:05
+Seconds taken to complete Testing: 37.30
+True label distribution: Counter({1.0: 1135, 0.0: 261})
+Predicted label distribution: Counter({1.0: 888, 0.0: 508})
+True Neg, False Pos, False Neg, True Pos are:  215 46 293 842
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.8597, 75.7163%, 74.1850%, 82.3755%, 94.8198%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.42      0.82      0.56       261
+         1.0       0.95      0.74      0.83      1135
+
+    accuracy                           0.76      1396
+   macro avg       0.69      0.78      0.70      1396
+weighted avg       0.85      0.76      0.78      1396
+
+Confusion Matrix:
+[[215  46]
+ [293 842]]
+----------------------
+ 
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Test only with model parameters to be loaded from ByPatients_4LoP_best_model.pth
+Test Patient: P7  Patch Image Distribution:  1396
+4-L Test-only for P7 starts at Pacific Time: 12-21-2024 18:52:21
+Seconds taken to complete Testing: 35.47
+True label distribution: Counter({1.0: 1135, 0.0: 261})
+Predicted label distribution: Counter({1.0: 888, 0.0: 508})
+True Neg, False Pos, False Neg, True Pos are:  215 46 293 842
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.8597, 75.7163%, 74.1850%, 82.3755%, 94.8198%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.42      0.82      0.56       261
+         1.0       0.95      0.74      0.83      1135
+
+    accuracy                           0.76      1396
+   macro avg       0.69      0.78      0.70      1396
+weighted avg       0.85      0.76      0.78      1396
+
+Confusion Matrix:
+[[215  46]
+ [293 842]]
+----------------------
+ 
+Test Patient: P11  Patch Image Distribution:  1164
+4-L Test-only for P11 starts at Pacific Time: 12-21-2024 18:52:56
+Seconds taken to complete Testing: 29.51
+True label distribution: Counter({1.0: 1164})
+Predicted label distribution: Counter({1.0: 1101, 0.0: 63})
+True Neg, False Pos, False Neg, True Pos are:  0 0 63 1101
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: -0.0000, 94.5876%, 94.5876%, 0.0000%, 100.0000%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.00      0.00      0.00         0
+         1.0       1.00      0.95      0.97      1164
+
+    accuracy                           0.95      1164
+   macro avg       0.50      0.47      0.49      1164
+weighted avg       1.00      0.95      0.97      1164
+
+Confusion Matrix:
+[[   0    0]
+ [  63 1101]]
+----------------------
+ 
+Test Patient: P6  Patch Image Distribution:  3709
+4-L Test-only for P6 starts at Pacific Time: 12-21-2024 18:53:26
+Seconds taken to complete Testing: 99.61
+True label distribution: Counter({0.0: 3027, 1.0: 682})
+Predicted label distribution: Counter({0.0: 2350, 1.0: 1359})
+True Neg, False Pos, False Neg, True Pos are:  1765 1262 585 97
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.2811, 50.2022%, 14.2229%, 58.3086%, 7.1376%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.75      0.58      0.66      3027
+         1.0       0.07      0.14      0.10       682
+
+    accuracy                           0.50      3709
+   macro avg       0.41      0.36      0.38      3709
+weighted avg       0.63      0.50      0.55      3709
+
+Confusion Matrix:
+[[1765 1262]
+ [ 585   97]]
+----------------------
+ 
+Test Patient: P1  Patch Image Distribution:  4336
+4-L Test-only for P1 starts at Pacific Time: 12-21-2024 18:55:06
+Seconds taken to complete Testing: 116.67
+True label distribution: Counter({0.0: 3307, 1.0: 1029})
+Predicted label distribution: Counter({0.0: 3406, 1.0: 930})
+True Neg, False Pos, False Neg, True Pos are:  3252 55 154 875
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.9671, 95.1799%, 85.0340%, 98.3369%, 94.0860%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.95      0.98      0.97      3307
+         1.0       0.94      0.85      0.89      1029
+
+    accuracy                           0.95      4336
+   macro avg       0.95      0.92      0.93      4336
+weighted avg       0.95      0.95      0.95      4336
+
+Confusion Matrix:
+[[3252   55]
+ [ 154  875]]
+----------------------
+ 
+
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Training Patients: ['P2', 'P3', 'P4', 'P5', 'P8', 'P9', 'P10', 'P12', 'P13'] Validation Patients: ['P1'] Test Patients: ['P7', 'P11']
+[Training vs Validation vs Test] Patch Image Distribution: 31188 4336 2560
+Training True label distribution [0: Non-Tumor; 1: Tumor]: Counter({1: 17938, 0: 13250}) Counter({0: 3307, 1: 1029}) Counter({1: 2299, 0: 261})
+Elapsed seconds for data loading: 0.94
+4-L to 5-L, TVT starts at Pacific Time: 12-21-2024 21:10:25
+Num_layers=5; Training_LR=0.000025; Batch_Size=24; Num_Epoches=8
+Train with LR=2.5e-05, starting by inheriting saved best model parameters from a less-layered network.
+Class weight Ratio = 0.7387
+Epoch [1/8], TL: 1.0239, TA: 97.1592%, last batch loss: 0.1005; VL: 2.5354, VA: 92.9659%;  seconds taken: 3171.27
+Trained model saved to ByPatients_5LoP_best_model.pth w/ avg loss: 1.7796, avg accuracy: 95.0625%
+Epoch [2/8], TL: 0.9176, TA: 97.4541%, last batch loss: 0.1062; VL: 3.1089, VA: 91.3745%;  seconds taken: 3198.41
+Epoch [3/8], TL: 0.8749, TA: 97.5728%, last batch loss: 0.0643; VL: 3.6077, VA: 89.9908%;  seconds taken: 3228.06
+Epoch [4/8], TL: 0.8205, TA: 97.7235%, last batch loss: 0.0747; VL: 3.6326, VA: 89.9216%;  seconds taken: 3223.59
+Epoch [5/8], TL: 0.7836, TA: 97.8261%, last batch loss: 0.0546; VL: 4.3475, VA: 87.9382%;  seconds taken: 3227.07
+Epoch [6/8], TL: 0.7535, TA: 97.9095%, last batch loss: 0.0825; VL: 4.4390, VA: 87.6845%;  seconds taken: 3221.80
+Epoch [7/8], TL: 0.7131, TA: 98.0217%, last batch loss: 0.0780; VL: 5.0790, VA: 85.9087%;  seconds taken: 3222.70
+^CTraceback (most recent call last): KeyboardInterrupt """ 4L- to 5-L Training Terminated Manually """
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Training Patients: ['P2', 'P3', 'P4', 'P5', 'P8', 'P9', 'P10', 'P12', 'P13'] Validation Patients: ['P1'] Test Patients: ['P7', 'P11']
+[Training vs Validation vs Test] Patch Image Distribution: 31188 4336 2560
+Training True label distribution [0: Non-Tumor; 1: Tumor]: Counter({1: 17938, 0: 13250}) Counter({0: 3307, 1: 1029}) Counter({1: 2299, 0: 261})
+Elapsed seconds for data loading: 0.96
+5-L to 5-L, TVT starts at Pacific Time: 12-22-2024 03:49:46
+Num_layers=5; Training_LR=0.000010; Batch_Size=24; Num_Epoches=8
+Fine-train with lower LR=1e-05, starting at the last saved best model parameters.
+Class weight Ratio = 0.7387
+Epoch [1/8], TL: 0.8541, TA: 97.6305%, last batch loss: 0.0219; VL: 2.6933, VA: 92.5277%;  seconds taken: 3170.16
+Trained model saved to ByPatients_5LoP_best_model.pth w/ avg loss: 1.7737, avg accuracy: 95.0791%
+Epoch [2/8], TL: 0.8344, TA: 97.6850%, last batch loss: 0.0174; VL: 2.8429, VA: 92.1125%;  seconds taken: 3183.21
+Epoch [3/8], TL: 0.8020, TA: 97.7748%, last batch loss: 0.0433; VL: 3.2669, VA: 90.9363%;  seconds taken: 3212.82
+Epoch [4/8], TL: 0.7812, TA: 97.8325%, last batch loss: 0.0349; VL: 3.2419, VA: 91.0055%;  seconds taken: 3243.34
+Epoch [5/8], TL: 0.7616, TA: 97.8870%, last batch loss: 0.0296; VL: 3.5744, VA: 90.0830%;  seconds taken: 3259.38
+Epoch [6/8], TL: 0.7443, TA: 97.9351%, last batch loss: 0.0687; VL: 3.5744, VA: 90.0830%;  seconds taken: 3247.03
+Epoch [7/8], TL: 0.7292, TA: 97.9768%, last batch loss: 0.0114; VL: 3.9734, VA: 88.9760%;  seconds taken: 3355.25
+Epoch [8/8], TL: 0.7003, TA: 98.0569%, last batch loss: 0.0163; VL: 3.7989, VA: 89.4603%;  seconds taken: 3293.65
+Training Complete. Elapsed seconds for this training & validation cycle: 25964.84
+Seconds taken to complete Testing: 95.19
+True label distribution: Counter({1.0: 2299, 0.0: 261})
+Predicted label distribution: Counter({1.0: 2235, 0.0: 325})
+True Neg, False Pos, False Neg, True Pos are:  191 70 134 2165
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.9288, 92.0312%, 94.1714%, 73.1801%, 96.8680%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.59      0.73      0.65       261
+         1.0       0.97      0.94      0.96      2299
+
+    accuracy                           0.92      2560
+   macro avg       0.78      0.84      0.80      2560
+weighted avg       0.93      0.92      0.92      2560
+
+Confusion Matrix:
+[[ 191   70]
+ [ 134 2165]]
+----------------------
+ 
+(cellpose-env) albert@Alberts-Mac-mini albert_HistoDL % python HSI-2DCNN-8LoP.py
+Model and data will be moved to Metal Performance backend
+sampled_data_percentage=100.00%; patch_size=87; spectral_bands_to_use=275
+Test only with model parameters to be loaded from ByPatients_5LoP_best_model.pth
+Test Patient: P7  with  1396  accepted patches.
+5-L Test-only for P7 starts at Pacific Time: 12-22-2024 11:10:55
+Seconds taken to complete Testing: 50.88
+True label distribution: Counter({1.0: 1135, 0.0: 261})
+Predicted label distribution: Counter({1.0: 1106, 0.0: 290})
+True Neg, False Pos, False Neg, True Pos are:  191 70 99 1036
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.8877, 87.8940%, 91.2775%, 73.1801%, 93.6709%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.66      0.73      0.69       261
+         1.0       0.94      0.91      0.92      1135
+
+    accuracy                           0.88      1396
+   macro avg       0.80      0.82      0.81      1396
+weighted avg       0.88      0.88      0.88      1396
+
+Confusion Matrix:
+[[ 191   70]
+ [  99 1036]]
+----------------------
+ 
+Test Patient: P11  with  1164  accepted patches.
+5-L Test-only for P11 starts at Pacific Time: 12-22-2024 11:11:45
+Seconds taken to complete Testing: 42.47
+True label distribution: Counter({1.0: 1164})
+Predicted label distribution: Counter({1.0: 1129, 0.0: 35})
+True Neg, False Pos, False Neg, True Pos are:  0 0 35 1129
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: -0.0000, 96.9931%, 96.9931%, 0.0000%, 100.0000%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.00      0.00      0.00         0
+         1.0       1.00      0.97      0.98      1164
+
+    accuracy                           0.97      1164
+   macro avg       0.50      0.48      0.49      1164
+weighted avg       1.00      0.97      0.98      1164
+
+Confusion Matrix:
+[[   0    0]
+ [  35 1129]]
+----------------------
+ 
+Test Patient: P6  with  3709  accepted patches.
+5-L Test-only for P6 starts at Pacific Time: 12-22-2024 11:12:28
+Seconds taken to complete Testing: 136.43
+True label distribution: Counter({0.0: 3027, 1.0: 682})
+Predicted label distribution: Counter({0.0: 1933, 1.0: 1776})
+True Neg, False Pos, False Neg, True Pos are:  1389 1638 544 138
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.2509, 41.1701%, 20.2346%, 45.8870%, 7.7703%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.72      0.46      0.56      3027
+         1.0       0.08      0.20      0.11       682
+
+    accuracy                           0.41      3709
+   macro avg       0.40      0.33      0.34      3709
+weighted avg       0.60      0.41      0.48      3709
+
+Confusion Matrix:
+[[1389 1638]
+ [ 544  138]]
+----------------------
+ 
+Test Patient: P1  with  4336  accepted patches.
+5-L Test-only for P1 starts at Pacific Time: 12-22-2024 11:14:44
+Seconds taken to complete Testing: 158.41
+True label distribution: Counter({0.0: 3307, 1.0: 1029})
+Predicted label distribution: Counter({0.0: 3290, 1.0: 1046})
+True Neg, False Pos, False Neg, True Pos are:  3159 148 131 898
+AUC, Test accuracy, sensitivity (recall), specificity, Precision are: 0.9577, 93.5655%, 87.2692%, 95.5246%, 85.8509%
+Classification Report:
+              precision    recall  f1-score   support
+
+         0.0       0.96      0.96      0.96      3307
+         1.0       0.86      0.87      0.87      1029
+
+    accuracy                           0.94      4336
+   macro avg       0.91      0.91      0.91      4336
+weighted avg       0.94      0.94      0.94      4336
+
+Confusion Matrix:
+[[3159  148]
+ [ 131  898]]
+----------------------
+
+
