@@ -11,7 +11,6 @@ import time
 from datetime import datetime
 from collections import Counter
 import matplotlib.pyplot as plt
-import csv
 
 """
 This Python program uses incremental learning through layer-wise expansion.
@@ -24,26 +23,23 @@ sampled_data_percentage = 100
 input_spectral_bands = 826//3 #275
 g_patch_size = 87
 
-attempt_gpu = True
+attempt_gpu = False
 g_batch_size = 24
 
 # Define the steps of machine learning processing of HSI data patches
 mlp_steps = [
-    #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
-    #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
-    #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
-    #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    #{'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
-    #{'desc':'5-L to 5-L, TVT', 'nol_from':5, 'nol_new':5, 'lr':0.00001, 'noe':8}
-    {'desc':'6-L to 6-L, TVT', 'nol_from':6, 'nol_new':6, 'lr':0.00002, 'noe':8}
+    {'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
+    {'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
+    {'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
+    {'desc':'3-L to 4-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 5-L, TVT', 'nol_from':5, 'nol_new':6, 'lr':0.00001, 'noe':8}
     ]
 
-mlp_testonly = {'desc':'6-L Test-only', 'nol':6}
+mlp_testonly = {'desc':'4-L Test-only', 'nol':4}
 testonly_patients = ["P7", "P11", "P6", "P1"]
-run_testonly = True #False #
+run_testonly = False
 
-# File path for the log
-mlp_log_file_path = "mlp_pnn_training_log_file.txt"
+mlp_log_file_path = "mlp_pnn_3D_training_log_file.txt"
 
 def read_log_file(file_path):
     """Read the log file and construct a dictionary."""
@@ -206,7 +202,9 @@ class HyperspectralDataset(Dataset):
         X_batch = np.array(X_batch)
         y_batch = np.array(y_batch)
     
-        tensor_patch = torch.tensor(X_batch.transpose(0, 3, 1, 2), dtype=torch.float32).to(self.gpu_device)
+        tensor_patch = torch.tensor(X_batch, dtype=torch.float32).to(self.gpu_device)
+        # No need to transpose as we'll handle the channel dimension in the model
+        
         tensor_label = torch.tensor(y_batch, dtype=torch.float32).to(self.gpu_device)
         return tensor_patch, tensor_label
 
@@ -247,118 +245,82 @@ class TumorClassifierCNN(nn.Module):
         super(TumorClassifierCNN, self).__init__()
         self.gpu_device = gpu_device
         dense_layer_inputs = 256
-        # Define the Conv2D layer
+
         if inherited_model is not None:
             self.conv1 = inherited_model.conv1
         else:
-            self.conv1 = nn.Conv2d(in_channels=num_input_channels, out_channels=256, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (87, 87, 275) -> (85, 85, 256)
-        
-        self.conv2 = None
+            self.conv1 = nn.Conv3d(
+                in_channels=1, 
+                out_channels=64,
+                kernel_size=(3, 3, 3),
+                stride=1,
+                padding=1
+            )
+
+        # Additional convolutional layers
+        self.additional_convs = nn.ModuleList()
         if num_layers > 1:
-            dense_layer_inputs = 256
-            if inherited_model is not None:
-                self.conv2 = inherited_model.conv2
-            if self.conv2 is None:
-                self.conv2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (85, 85, 256) -> (83, 83, 256)
-            
-        self.conv3 = None
-        if num_layers > 2:
-            dense_layer_inputs = 512
-            if inherited_model is not None:
-                self.conv3 = inherited_model.conv3
-            if self.conv3 is None:
-                self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (83, 83, 256) -> (81, 81, 512)
-
-        self.conv4 = None
-        if num_layers > 3:
-            dense_layer_inputs = 512
-            if inherited_model is not None:
-                self.conv4 = inherited_model.conv4
-            if self.conv4 is None:
-                self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (81, 81, 512) -> (79, 79, 512)
-
-        self.conv5 = None    
-        if num_layers > 4:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv5 = inherited_model.conv5
-            if self.conv5 is None:
-                self.conv5 = nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # -> (77, 77, 1024)
-
-        self.conv6 = None
-        if num_layers > 5:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv6 = inherited_model.conv6
-            if self.conv6 is None:
-                self.conv6 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # (77, 77, 1024) -> (75, 75, 1024)
-            
-        self.conv7 = None
-        if num_layers > 6:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv7 = inherited_model.conv7
-            if self.conv7 is None:
-                self.conv7 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (28, 28, 1024)
-
-        self.conv8 = None
-        if num_layers > 7:
-            dense_layer_inputs = 1024    
-            if inherited_model is not None:
-                self.conv8 = inherited_model.conv8
-            if self.conv8 is None:
-                self.conv8 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (26, 26, 1024)
+            for _ in range(num_layers - 1):
+                if inherited_model is not None and len(inherited_model.additional_convs) > len(self.additional_convs):
+                    self.additional_convs.append(inherited_model.additional_convs[len(self.additional_convs)])
+                else:
+                    self.additional_convs.append(
+                        nn.Conv3d(
+                            in_channels=64,
+                            out_channels=64,
+                            kernel_size=(3, 3, 3),
+                            stride=1,
+                            padding=1
+                        )
+                    )
 
         # Global average pooling
-        self.pool = nn.AdaptiveAvgPool2d((1, 1))  # (71, 71, 1024) -> (1, 1, 1024)
-        self.dl = None
-        if dense_layer_inputs > 256:
-            self.dl = nn.Linear(dense_layer_inputs, 256)  # (1, 1024) -> (1, 256)
+        self.pool = nn.AdaptiveAvgPool3d((1, 1, 1))
 
-        # Fully connected (dense) layer
-        self.fc = nn.Linear(256, 1) #2)  # (1, 256) -> (1, 2)
-
+        # Fully connected layers
+        #self.fc1 = nn.Linear(32, 1)
+        self.fc2 = nn.Linear(64, 1)  # Binary classification
+        
         # Activation and Dropout
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(0.1)
-        #print("At CNN instantiation time, 1st layer weight shape is:", self.conv1.weight.shape)
-        
-    def forward(self, x):
-        x = self.dropout(self.relu(self.conv1(x)))
-        if self.conv2 is not None:
-            x = self.dropout(self.relu(self.conv2(x)))
-        if self.conv3 is not None:        
-            x = self.dropout(self.relu(self.conv3(x)))
-        if self.conv4 is not None:
-            x = self.dropout(self.relu(self.conv4(x)))
-        if self.conv5 is not None:        
-            x = self.dropout(self.relu(self.conv5(x)))
-        if self.conv6 is not None:
-            x = self.dropout(self.relu(self.conv6(x)))
-        if self.conv7 is not None:        
-            x = self.dropout(self.relu(self.conv7(x)))
-        if self.conv8 is not None:
-            x = self.dropout(self.relu(self.conv8(x)))
-        # Global average pooling
-        x = self.pool(x)  # Shape: (batch_size, 1024, 1, 1)
-        x = x.view(x.size(0), -1)    # Flatten to (batch_size, 1024)
 
-        # Dense layer
-        if self.dl is not None:
-            x = self.dropout(self.relu(self.dl(x)))
-        # Fully connected layer. No activation function as the loss function (e.g., BCEWithLogitsLoss) internally applies sigmoid for numerical stability.
-        #x = self.dropout(self.relu(self.fc(x)))
-        # Dropout is less commonly used in output layers.
-        #x = self.dropout(self.fc(x))
-        x = self.fc(x)
+    def forward(self, x):
+        # Reshape input to include channel dimension
+        # Input shape: (batch_size, spectral_bands, height, width)
+        # Needed shape: (batch_size, 1, spectral_bands, height, width)
+        #print("Step 1")
+        x = x.unsqueeze(1)
+        
+        # First convolution layer
+        #print("Step 2")
+        x = self.dropout(self.relu(self.conv1(x)))
+        
+        # Additional convolution layers
+        #print("Step 3")
+        for conv in self.additional_convs:
+            x = self.dropout(self.relu(conv(x)))
+        
+        # Global average pooling
+        #print("Step 4")
+        x = self.pool(x)
+        x = x.view(x.size(0), -1)
+        
+        #print("Step 5")
+
+        # Fully connected layers
+        #x = self.dropout(self.relu(self.fc1(x)))
+        x = self.fc2(x)
+        
         return x
+
 
 class HyperspectralNetworkTrainer():
     def __init__(self, num_layers, input_bands=range(0,input_spectral_bands), class_weight_ratio=1.0, gpu_device=None, learning_rate=0.0001, num_layers_of_inherited_model=0):
         self.my_num_layer = num_layers
         self.gpu_device = gpu_device
-        self.model_save_file = f'ByPatients_{self.my_num_layer}LoP_best_model.pth'
-        self.target_accuracy = 0.65
+        self.model_save_file = f'ByPatients_3D_{self.my_num_layer}LoP_best_model.pth'
+        self.target_val_accuracy = 0.65
         # Initialize model
         self.input_bands = input_bands
         if num_layers_of_inherited_model == 0:
@@ -369,7 +331,7 @@ class HyperspectralNetworkTrainer():
                 pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=self.my_num_layer)         
             else:
                 pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
-                pretrained_model.load_state_dict(torch.load(f'ByPatients_{num_layers_of_inherited_model}LoP_best_model.pth'))            
+                pretrained_model.load_state_dict(torch.load(f'ByPatients_3D_{num_layers_of_inherited_model}LoP_best_model.pth'))            
         
         if num_layers_of_inherited_model == -1:
             print(f"Test only with model parameters to be loaded from {self.model_save_file}")
@@ -389,7 +351,7 @@ class HyperspectralNetworkTrainer():
         if gpu_device is not None:
             self.model.to(gpu_device)
 
-        #Initialize loss function and optimizer. These are not needed for test-only.
+        #Initialize loss function and optimizer. These are not necessary for test-only.
         if num_layers_of_inherited_model >= 0:
             print(f"Class weight Ratio = {class_weight_ratio:.4f}")
             class_weights = torch.tensor([class_weight_ratio], dtype=torch.float32, device=gpu_device)
@@ -397,9 +359,7 @@ class HyperspectralNetworkTrainer():
             self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate, weight_decay=1e-5)
 
     def train_with_validation(self, train_dataset, val_dataset, loss_th_to_stop=0.005, accrucy_th_to_stop=0.99, epochs=100):
-        # Read the log file
         log_data = read_log_file(mlp_log_file_path)
-
         train_start_time = time.time()
         if self.my_num_layer in log_data:
             best_loss = log_data[self.my_num_layer]["avg_loss"]
@@ -417,20 +377,29 @@ class HyperspectralNetworkTrainer():
             batch_loss = 0.0
             self.model.train()
             for batch_idx in range(len(train_dataset)):
+                batch_start = time.time()
+                #print(f"Started to get batch data for batch {batch_idx}")
                 X_batch, y_batch = train_dataset[batch_idx]  # X_batch shape: (batch_size, num_features)
 
                 self.optimizer.zero_grad()
+                #print("Started forward path")
                 outputs = self.model(X_batch).squeeze()
+                #print("Calculate loss function")
                 loss = self.criterion(outputs, y_batch)
                 batch_loss = loss.item()
+                #print("Backward path")
                 loss.backward()
+
                 #loss.backward(retain_graph=True)
+                #print("Updating parameters based on backward gradient")
                 self.optimizer.step()
 
                 probabilities = torch.sigmoid(outputs)  # Convert logits to probabilities
                 y_pred_batch = (probabilities > 0.5).float()        
                 y_true_trn.extend(y_batch.cpu().numpy())
-                y_pred_trn.extend(y_pred_batch.cpu().numpy())                
+                y_pred_trn.extend(y_pred_batch.cpu().numpy())
+                batch_end = time.time()
+                print(f"Batch {batch_idx + 1} took {batch_end - batch_start} seconds")                
                 
             # Compute metrics for the training process
             trn_loss = log_loss(y_true_trn, y_pred_trn)
@@ -501,10 +470,10 @@ class HyperspectralNetworkTrainer():
         with torch.no_grad():  # Disable gradient computation for efficiency
             for batch_idx in range(len(dataset)):
                 X_batch, y_batch = dataset[batch_idx]  # X_batch shape: (batch_size, num_features)
-                outputs = self.model(X_batch).squeeze()
+                outputs = self.model(X_batch).squeeze()                
                 probabilities = torch.sigmoid(outputs)  # Convert logits to probabilities
                 y_pred_batch = (probabilities > 0.5).float()
-                all_scores.extend(probabilities.cpu().numpy())
+                all_scores.extend(outputs.cpu().numpy())        
                 all_labels.extend(y_batch.cpu().numpy())
                 all_preds.extend(y_pred_batch.cpu().numpy())
 
@@ -521,12 +490,8 @@ class HyperspectralNetworkTrainer():
             print(cm.shape)
             raise ValueError("The confusion matrix does not have a 2x2 shape, which is required for binary classification.")
 
-        # Calculate AUC
-        if len(set(all_labels)) < 2:
-            auc = -0.0
-        else:
-            auc = roc_auc_score(all_labels, all_scores)
-
+        #AUC
+        auc = roc_auc_score(all_labels, all_scores)
         # Accuracy
         accuracy = accuracy_score(all_labels, all_preds)
         # Sensitivity (Recall or True Positive Rate)
@@ -543,7 +508,6 @@ class HyperspectralNetworkTrainer():
 
         print("Confusion Matrix:")
         print(confusion_matrix(all_labels, all_preds))
-        return all_labels, all_preds, all_scores
 
 if attempt_gpu:
     if torch.backends.mps.is_available():
@@ -565,29 +529,15 @@ if run_testonly:
     trn_patients = []
     val_patients = []
     patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
-    test_only_num_of_layers = mlp_testonly['nol']
-    trainer = HyperspectralNetworkTrainer(test_only_num_of_layers, gpu_device=g_gpu_device, num_layers_of_inherited_model=-1)
-    # Write to CSV file
-    # CSV file path
-    joined_patients_str = '_'.join(testonly_patients)
-    output_csv_path = f"test_output_{joined_patients_str}_{test_only_num_of_layers}L.csv"
-    print("Test output will be saved to: ", output_csv_path)
-    with open(output_csv_path, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        # Write header
-        writer.writerow(["Patch Path", "True Label", "Predicted Label", "Probabilities"])
-        for tst_patient in testonly_patients:
-            _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
-                                                trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
-            print("Test Patient:", tst_patient, " with ", str(len(test_set)), " accepted patches.")
-            test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
-            local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
-            print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
-            true_labels, predicted_labels, probabilities = trainer.test_model(test_dataset)                                
-            # Write rows
-            for path, true, pred, prob in zip(test_set, true_labels, predicted_labels, probabilities):
-                writer.writerow([path, true, pred, prob])
-
+    trainer = HyperspectralNetworkTrainer(mlp_testonly['nol'], gpu_device=g_gpu_device, num_layers_of_inherited_model=-1)
+    for tst_patient in testonly_patients:
+        _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
+                                            trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
+        print("Test Patient:", tst_patient, " Patch Image Distribution: ", str(len(test_set)))
+        test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
+        local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
+        print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
+        trainer.test_model(test_dataset)
         print("----------------------")
         print(" ")
 else:        
