@@ -27,3 +27,7 @@ Each HSI patch has 275 spectral bands, down from 826, averaged from the 2 neighb
 * scikit-learn
 * matplotlib
 * CUDA or MPS compatible system (compatible with both CUDA (NVIDIA) and MPS (Apple Metal) backends)
+
+## Partition by ROI instead of by patient - Partition_Per_ROI.py
+
+Shuffles the ROIs in the dataset, skipping Patient 6, and then iterates through them seperating into two sets, a training set and a validation and testing set. The split is about 70% (about 29,000 patches) training and 30% (about 12,000 patches) validation and testing. 
