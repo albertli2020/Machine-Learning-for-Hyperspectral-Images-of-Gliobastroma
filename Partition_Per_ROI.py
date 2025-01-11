@@ -16,8 +16,9 @@ for root, dirs, files in os.walk(base_dir):
             parts = dir_name.split('_')
             if parts[0][1] == '6':
                 continue  # skip P6
-            Pn_ROI_m = parts[0] + '_ROI_' + parts[2]  # e.g., 'P1_ROI_02'
-            dataset[Pn_ROI_m].append(os.path.join(root, file))
+            if parts[-1] == 'T' or parts[-1] == 'NT':                
+                Pn_ROI_m = parts[0] + '_ROI_' + parts[2]  # e.g., 'P1_ROI_02'
+                dataset[Pn_ROI_m].append(os.path.join(root, file))
 
 keys = list(dataset.keys())
 random.shuffle(keys)
