@@ -1,0 +1,30 @@
+total patches:  29115
+P2_ROI_03 selected for training: 377
+P8_ROI_01 selected for training: 1772
+P13_ROI_01 selected for training: 1151
+P1_ROI_04 selected for training: 271
+P5_ROI_02 selected for training: 1636
+P7_ROI_02 selected for training: 218
+P12_ROI_01 selected for training: 1162
+P5_ROI_01 selected for training: 1148
+P5_ROI_04 selected for training: 1898
+P9_ROI_01 selected for training: 1161
+P3_ROI_02 selected for training: 305
+P1_ROI_01 selected for training: 1029
+P2_ROI_01 selected for training: 1188
+P4_ROI_01 selected for training: 97
+P9_ROI_02 selected for training: 553
+P8_ROI_03 selected for training: 958
+P10_ROI_01 selected for training: 453
+P1_ROI_03 selected for training: 1106
+P8_ROI_02 selected for training: 1563
+P5_ROI_03 selected for training: 1362
+P7_ROI_01 selected for training: 43
+P3_ROI_01 selected for val/test:  1098
+P2_ROI_02 selected for training: 617
+P4_ROI_02 selected for val/test:  3720
+P1_ROI_02 selected for val/test:  1930
+P7_ROI_03 selected for val/test:  1135
+P11_ROI_01 selected for val/test:  1164
+20068 (68.93%) patches for training; 9047 patches for val/test
+22 out of 27 ROIs selected for training
