@@ -16,35 +16,85 @@ import csv
 """
 This Python program uses incremental learning through layer-wise expansion.
 Similar to Progressive GANs, layers are added gradually to a network during training.
-The progressive complexity growing scheme inherits parameters from simpler (less-layered) networks to initialize deeper (more-layered) ones.
-An up-to 8 layer 2D CNN is built progressively in a hierarchical fashion, with HSI patches of shape (87, 87, 275) * float32.
+The progressive complexity growing scheme inherits parameters from shallower networks to initialize deeper (more-layered) ones.
+An up-to 8-layer 2D- or 4-layer-3D CNN is built progressively in a hierarchical fashion, with HSI patches of shape (87, 87, 275) * float32.
+"""
+"""
+Do the following the activate and customize python environment, including a nightly development build of PyTorch:
+
+conda activate /Users/albert/anaconda3/envs/pyTorch-MPS
+# Do the following once to persist the customized PyTorch development build installation to support conv3d on MPS
+pip install --upgrade --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cpu
 """
 data_root_dir = "ntp_90_90_275/"
-sampled_data_percentage = 100
+sampled_data_percentage = 5 #100 #to reduce validation data size
 input_spectral_bands = 826//3 #275
 g_patch_size = 87
 
+tvt_data_folds = [  [["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"], ["P1"], ["P7", "P11"]],
+                    [["P2", "P1", "P7", "P5", "P8", "P9", "P10", "P12", "P11"], ["P3"], ["P4", "P13"]],
+                    [["P1", "P3", "P4", "P11", "P8", "P10", "P12", "P13"], ["P7"], ["P2", "P5", "P9"]],
+                    [["P2", "P7", "P4", "P5", "P9", "P11", "P13"], ["P1"], ["P3", "P8", "P10", "P12"]],
+                    ["train_set_ROI_F1.txt", "val_test_set_ROI_F1.txt"],
+                    ["train_set_ROI_F2.txt", "val_test_set_ROI_F2.txt"],
+                    ["train_set_ROI_F3.txt", "val_test_set_ROI_F3.txt"],
+                    ["train_set_ROI_F4.txt", "val_test_set_ROI_F4.txt"],
+                    ["train_set_ROI_F5.txt", "val_test_set_ROI_F5.txt"]
+                ]
+global_specifier_2D_F1 = {'nn_arch_name': '2D', 'data_fold_type': 'Patient', 'data_fold_name': 'F1', 'tvt_data_fold_idx': 0, 'batch_size':24, '1st_hl_size':256}
+global_specifier_3D_F1 = {'nn_arch_name': '3D', 'data_fold_type': 'Patient', 'data_fold_name': 'F1', 'tvt_data_fold_idx': 0, 'batch_size':12, '1st_hl_size':16}
+global_specifier_2D_ROI_F1 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F1', 'tvt_data_fold_idx': 4+0, 'batch_size':24, '1st_hl_size':256}
+
+
+global_specifier = global_specifier_2D_ROI_F1 #global_specifier_2D_F1 #global_specifier_3D_F1
+g_batch_size = global_specifier['batch_size']
+g_1st_hidden_layer_size = global_specifier['1st_hl_size']
 attempt_gpu = True
-g_batch_size = 24
 
 # Define the steps of machine learning processing of HSI data patches
 mlp_steps = [
-    #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
-    #{'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':22},
-    #{'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
-    #{'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
-    #{'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
+    {'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
+    #{'desc':'1-L to 1-L, TVT', 'nol_from':1, 'nol_new':1, 'lr':0.0015, 'noe':5},
+    {'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':25},
+    {'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
+    {'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
+    {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
     #{'desc':'5-L to 5-L, TVT', 'nol_from':5, 'nol_new':5, 'lr':0.00001, 'noe':8}
-    {'desc':'6-L to 6-L, TVT', 'nol_from':6, 'nol_new':6, 'lr':0.00002, 'noe':8}
+    #{'desc':'6-L to 6-L, TVT', 'nol_from':6, 'nol_new':6, 'lr':0.00002, 'noe':8}
     ]
 
-mlp_testonly = {'desc':'6-L Test-only', 'nol':6}
-testonly_patients = ["P7", "P11", "P6", "P1"]
-run_testonly = True #False #
+mlp_testonly_1 = {'desc':'1-L Test-only', 'nol':1}
+mlp_testonly_2 = {'desc':'2-L Test-only', 'nol':2}
+mlp_testonly_3 = {'desc':'3-L Test-only', 'nol':3}
+mlp_testonly_4 = {'desc':'4-L Test-only', 'nol':4}
+mlp_testonly_5 = {'desc':'5-L Test-only', 'nol':5}
+mlp_testonly_6 = {'desc':'6-L Test-only', 'nol':6}
+mlp_testonly = mlp_testonly_6
+if global_specifier['data_fold_type'] == 'Patient':
+    testonly_patients = tvt_data_folds[global_specifier['tvt_data_fold_idx']][2] + tvt_data_folds[global_specifier['tvt_data_fold_idx']][1] + ["P6"]
+#testonly_patients = ["P6"]
+run_testonly = False #True #
 
 # File path for the log
-mlp_log_file_path = "mlp_pnn_training_log_file.txt"
+mlp_log_file_path = f"mlp_pnn_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_training_log_file.txt"
 
+def read_dataset_file_list(file_path, duplicatePos = False):
+    dataset_files = []
+    if os.path.exists(file_path):
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+            #for line in lines:
+            #    dataset_files.extend(line.strip())
+            for line in lines:
+                clean_line = line.rstrip('\n')
+                dataset_files += [clean_line]
+                if duplicatePos:
+                    p = os.path.dirname(clean_line)                         
+                    if p.endswith("_T") or p.endswith("_T_50G"):
+                        dataset_files += [clean_line]
+    
+    return dataset_files
+    
 def read_log_file(file_path):
     """Read the log file and construct a dictionary."""
     log_data = {}
@@ -92,17 +142,15 @@ def generatePatchListsByPatient(path, training_patients=[]):
     return patient_patch_dict
 
 def labelHSIDataSet(data_files):
-
     labels = []
-
     for file in data_files:
-        p = os.path.dirname(file)
-        # print(p)
+        #print(file)
+        p = os.path.dirname(file)        
+        #print(p)
         if p.endswith("_T") or p.endswith("_T_50G"):  
             labels.append(1)
         else:
             labels.append(0)
-
     return labels
 
 def dataSetSample(precentage, set1, set2=[], attempt_to_balance=False):
@@ -139,12 +187,12 @@ def HSIDatasetSplitByPatientLists(patient_file_dict, training_patients, validati
 
     for patient in test_patients:
         test_set.extend(patient_file_dict[patient])
-    test_set = dataSetSample(data_precentage, test_set, attempt_to_balance=False)
+    test_set = dataSetSample(1.0, test_set, attempt_to_balance=False)
     test_labels = labelHSIDataSet(test_set)
 
     for patient in training_patients:
         training_set.extend(patient_file_dict[patient])
-    training_set = dataSetSample(data_precentage, training_set, attempt_to_balance=False)
+    training_set = dataSetSample(1.0, training_set, attempt_to_balance=False)
     training_labels = labelHSIDataSet(training_set)
 
     return training_set, training_labels, validation_set, validation_labels, test_set, test_labels
@@ -206,7 +254,9 @@ class HyperspectralDataset(Dataset):
         X_batch = np.array(X_batch)
         y_batch = np.array(y_batch)
     
-        tensor_patch = torch.tensor(X_batch.transpose(0, 3, 1, 2), dtype=torch.float32).to(self.gpu_device)
+        if global_specifier['nn_arch_name'] == '2D':
+            X_batch = X_batch.transpose(0, 3, 1, 2)
+        tensor_patch = torch.tensor(X_batch, dtype=torch.float32).to(self.gpu_device)
         tensor_label = torch.tensor(y_batch, dtype=torch.float32).to(self.gpu_device)
         return tensor_patch, tensor_label
 
@@ -243,80 +293,96 @@ class HyperspectralDataset(Dataset):
 
 # Define the CNN model (same as before)
 class TumorClassifierCNN(nn.Module):
+    def init_2D(self, num_input_channels, num_layers, gpu_device):
+        if self.conv1 is None:
+            self.conv1 = nn.Conv2d(in_channels=num_input_channels, out_channels=g_1st_hidden_layer_size, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (87, 87, 275) -> (85, 85, 256)
+        if num_layers > 1 and self.conv2 is None:
+            self.conv2 = nn.Conv2d(in_channels=g_1st_hidden_layer_size, out_channels=256, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (85, 85, 256) -> (83, 83, 256)
+        if num_layers > 2 and self.conv3 is None:
+            self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (83, 83, 256) -> (81, 81, 512)
+        if num_layers > 3 and self.conv4 is None:
+            self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (81, 81, 512) -> (79, 79, 512)
+        if num_layers > 4 and self.conv5 is None:
+            self.conv5 = nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # -> (77, 77, 1024)
+        if num_layers > 5 and self.conv6 is None:
+            self.conv6 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # (77, 77, 1024) -> (75, 75, 1024)
+        if num_layers > 6 and self.conv7 is None:
+            self.conv7 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (28, 28, 1024)
+        if num_layers > 7 and self.conv8 is None:
+            self.conv8 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (26, 26, 1024)            
+
+    def init_3D(self, num_output_channels, num_layers, gpu_device):
+        if self.conv1 is None:
+            self.conv1 = nn.Conv3d(in_channels=1, out_channels=num_output_channels, kernel_size=(3, 3, 3), stride=1, padding=1, device=gpu_device)
+        if num_layers > 1 and self.conv2 is None:        
+            self.conv2 = nn.Conv3d(in_channels=num_output_channels, out_channels=num_output_channels, kernel_size=(3, 3, 3), stride=1, padding=1, device=gpu_device)
+        if num_layers > 2 and self.conv3 is None:
+            self.conv3 = nn.Conv3d(in_channels=num_output_channels, out_channels=num_output_channels, kernel_size=(3, 3, 3), stride=1, padding=1, device=gpu_device)
+        if num_layers > 3 and self.conv4 is None:
+            self.conv4 = nn.Conv3d(in_channels=num_output_channels, out_channels=num_output_channels, kernel_size=(3, 3, 3), stride=1, padding=1, device=gpu_device)
+
     def __init__(self, num_input_channels, gpu_device=None, num_layers=1, inherited_model=None):
         super(TumorClassifierCNN, self).__init__()
         self.gpu_device = gpu_device
-        dense_layer_inputs = 256
-        # Define the Conv2D layer
+        dense_layer_inputs = g_1st_hidden_layer_size
+        self.conv1 = None
+        self.conv2 = None
+        self.conv3 = None
+        self.conv4 = None
+        self.conv5 = None
+        self.conv6 = None
+        self.conv7 = None
+        self.conv8 = None
+        self.dl = None
+        self.unsqueezeInput = False
+        # Define the Conv layers
         if inherited_model is not None:
             self.conv1 = inherited_model.conv1
-        else:
-            self.conv1 = nn.Conv2d(in_channels=num_input_channels, out_channels=256, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (87, 87, 275) -> (85, 85, 256)
-        
-        self.conv2 = None
         if num_layers > 1:
             dense_layer_inputs = 256
             if inherited_model is not None:
                 self.conv2 = inherited_model.conv2
-            if self.conv2 is None:
-                self.conv2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (85, 85, 256) -> (83, 83, 256)
-            
-        self.conv3 = None
         if num_layers > 2:
             dense_layer_inputs = 512
             if inherited_model is not None:
                 self.conv3 = inherited_model.conv3
-            if self.conv3 is None:
-                self.conv3 = nn.Conv2d(in_channels=256, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (83, 83, 256) -> (81, 81, 512)
-
-        self.conv4 = None
         if num_layers > 3:
             dense_layer_inputs = 512
             if inherited_model is not None:
                 self.conv4 = inherited_model.conv4
-            if self.conv4 is None:
-                self.conv4 = nn.Conv2d(in_channels=512, out_channels=512, kernel_size=3, stride=1, padding=0, device=gpu_device)  # (81, 81, 512) -> (79, 79, 512)
 
-        self.conv5 = None    
-        if num_layers > 4:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv5 = inherited_model.conv5
-            if self.conv5 is None:
-                self.conv5 = nn.Conv2d(in_channels=512, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # -> (77, 77, 1024)
-
-        self.conv6 = None
-        if num_layers > 5:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv6 = inherited_model.conv6
-            if self.conv6 is None:
-                self.conv6 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) # (77, 77, 1024) -> (75, 75, 1024)
-            
-        self.conv7 = None
-        if num_layers > 6:
-            dense_layer_inputs = 1024
-            if inherited_model is not None:
-                self.conv7 = inherited_model.conv7
-            if self.conv7 is None:
-                self.conv7 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (28, 28, 1024)
-
-        self.conv8 = None
-        if num_layers > 7:
-            dense_layer_inputs = 1024    
-            if inherited_model is not None:
-                self.conv8 = inherited_model.conv8
-            if self.conv8 is None:
-                self.conv8 = nn.Conv2d(in_channels=1024, out_channels=1024, kernel_size=3, stride=1, padding=0, device=gpu_device) #-> (26, 26, 1024)
-
-        # Global average pooling
-        self.pool = nn.AdaptiveAvgPool2d((1, 1))  # (71, 71, 1024) -> (1, 1, 1024)
-        self.dl = None
-        if dense_layer_inputs > 256:
-            self.dl = nn.Linear(dense_layer_inputs, 256)  # (1, 1024) -> (1, 256)
-
-        # Fully connected (dense) layer
-        self.fc = nn.Linear(256, 1) #2)  # (1, 256) -> (1, 2)
+        if global_specifier['nn_arch_name'] == '2D':            
+            if num_layers > 4:
+                dense_layer_inputs = 1024
+                if inherited_model is not None:
+                    self.conv5 = inherited_model.conv5            
+            if num_layers > 5:
+                dense_layer_inputs = 1024
+                if inherited_model is not None:
+                    self.conv6 = inherited_model.conv6
+            if num_layers > 6:
+                dense_layer_inputs = 1024
+                if inherited_model is not None:
+                    self.conv7 = inherited_model.conv7            
+            if num_layers > 7:
+                dense_layer_inputs = 1024    
+                if inherited_model is not None:
+                    self.conv8 = inherited_model.conv8
+            self.init_2D(num_input_channels, num_layers, gpu_device)
+            # Global average pooling
+            self.pool = nn.AdaptiveAvgPool2d((1, 1))  # (71, 71, 1024) -> (1, 1, 1024)
+            if dense_layer_inputs > 256:
+                self.dl = nn.Linear(dense_layer_inputs, 256)  # (1, 1024) -> (1, 256)            
+            # Fully connected (dense) layer
+            self.fc = nn.Linear(256, 1) #2)  # (1, 256) -> (1, 2)
+            self.fc2 = None
+        else:
+            self.unsqueezeInput = True
+            self.init_3D(g_1st_hidden_layer_size, num_layers, gpu_device)        
+            # Global average pooling
+            self.pool = nn.AdaptiveAvgPool3d((1, 1, 1))
+            self.fc2 = nn.Linear(g_1st_hidden_layer_size, 1)  # Binary classification
+            self.fc = None #an earlier version of 3DCNN started to use fc2; so we have to stick with it...
 
         # Activation and Dropout
         self.relu = nn.ReLU()
@@ -324,6 +390,8 @@ class TumorClassifierCNN(nn.Module):
         #print("At CNN instantiation time, 1st layer weight shape is:", self.conv1.weight.shape)
         
     def forward(self, x):
+        if self.unsqueezeInput:
+            x = x.unsqueeze(1)
         x = self.dropout(self.relu(self.conv1(x)))
         if self.conv2 is not None:
             x = self.dropout(self.relu(self.conv2(x)))
@@ -350,14 +418,17 @@ class TumorClassifierCNN(nn.Module):
         #x = self.dropout(self.relu(self.fc(x)))
         # Dropout is less commonly used in output layers.
         #x = self.dropout(self.fc(x))
-        x = self.fc(x)
+        if self.fc is not None:
+            x = self.fc(x)
+        else:
+            x = self.fc2(x)
         return x
 
 class HyperspectralNetworkTrainer():
     def __init__(self, num_layers, input_bands=range(0,input_spectral_bands), class_weight_ratio=1.0, gpu_device=None, learning_rate=0.0001, num_layers_of_inherited_model=0):
         self.my_num_layer = num_layers
         self.gpu_device = gpu_device
-        self.model_save_file = f'ByPatients_{self.my_num_layer}LoP_best_model.pth'
+        self.model_save_file = f"ByPatients_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{self.my_num_layer}LoP_best_model.pth"
         self.target_accuracy = 0.65
         # Initialize model
         self.input_bands = input_bands
@@ -369,7 +440,7 @@ class HyperspectralNetworkTrainer():
                 pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=self.my_num_layer)         
             else:
                 pretrained_model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
-                pretrained_model.load_state_dict(torch.load(f'ByPatients_{num_layers_of_inherited_model}LoP_best_model.pth'))            
+                pretrained_model.load_state_dict(torch.load(f"ByPatients_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{num_layers_of_inherited_model}LoP_best_model.pth"))            
         
         if num_layers_of_inherited_model == -1:
             print(f"Test only with model parameters to be loaded from {self.model_save_file}")
@@ -382,7 +453,7 @@ class HyperspectralNetworkTrainer():
             if num_layers_of_inherited_model == 0:
                 print(f"Train with LR={learning_rate}, starting from scratch.")
             else:
-                print(f"Train with LR={learning_rate}, starting by inheriting saved best model parameters from a less-layered network.")
+                print(f"Train with LR={learning_rate}, starting by inheriting saved best model parameters from a shallower network.")
             self.model = TumorClassifierCNN(num_input_channels=len(input_bands), gpu_device=gpu_device, num_layers=self.my_num_layer, inherited_model=pretrained_model)
 
         # This model.to() step might not be needed as the CNN instantiation above was executed with gpu_device specified.
@@ -428,12 +499,15 @@ class HyperspectralNetworkTrainer():
                 self.optimizer.step()
 
                 probabilities = torch.sigmoid(outputs)  # Convert logits to probabilities
-                y_pred_batch = (probabilities > 0.5).float()        
+                if probabilities.ndim == 0:
+                    probabilities = probabilities.unsqueeze(0)
+                y_pred_batch = probabilities.float().detach()
                 y_true_trn.extend(y_batch.cpu().numpy())
                 y_pred_trn.extend(y_pred_batch.cpu().numpy())                
                 
             # Compute metrics for the training process
             trn_loss = log_loss(y_true_trn, y_pred_trn)
+            y_pred_trn = (np.array(y_pred_trn) > 0.5).astype(int)
             trn_accuracy = accuracy_score(y_true_trn, y_pred_trn)
 
             # Validation
@@ -446,11 +520,14 @@ class HyperspectralNetworkTrainer():
                     X_batch, y_batch = val_dataset[batch_idx]  # X_batch shape: (batch_size, num_features)                    
                     outputs = self.model(X_batch).squeeze()
                     probabilities = torch.sigmoid(outputs)  # Convert logits to probabilities
-                    y_pred_batch = (probabilities > 0.5).float()                    
+                    if probabilities.ndim == 0:
+                        probabilities = probabilities.unsqueeze(0)
+                    y_pred_batch = probabilities.float().detach()
                     y_true_val.extend(y_batch.cpu().numpy())
                     y_pred_val.extend(y_pred_batch.cpu().numpy())
             # Compute metrics for the validation process
             val_loss = log_loss(y_true_val, y_pred_val)
+            y_pred_val = (np.array(y_pred_val) > 0.5).astype(int)
             val_accuracy = accuracy_score(y_true_val, y_pred_val)
         
             epoch_end_time = time.time()
@@ -465,7 +542,8 @@ class HyperspectralNetworkTrainer():
             epoch_avg_accuracy = (trn_accuracy + val_accuracy)/2.0
             epoch_avg_loss = (trn_loss + val_loss)/2.0
             # Save the model if average loss and accuracy improves
-            if (epoch_avg_loss <= best_loss) and (epoch_avg_accuracy >= best_accuracy) and (epoch_avg_accuracy > self.target_accuracy):
+            #if (epoch_avg_loss <= best_loss) and (epoch_avg_accuracy >= best_accuracy) and (epoch_avg_accuracy > self.target_accuracy):
+            if (epoch_avg_accuracy >= best_accuracy) and (epoch_avg_accuracy > self.target_accuracy):
                 best_loss = epoch_avg_loss
                 best_accuracy = epoch_avg_accuracy
                 target_met = True
@@ -502,7 +580,10 @@ class HyperspectralNetworkTrainer():
             for batch_idx in range(len(dataset)):
                 X_batch, y_batch = dataset[batch_idx]  # X_batch shape: (batch_size, num_features)
                 outputs = self.model(X_batch).squeeze()
-                probabilities = torch.sigmoid(outputs)  # Convert logits to probabilities
+                probabilities = torch.sigmoid(outputs).detach() # Convert logits to probabilities
+                if probabilities.ndim == 0:
+                    probabilities = probabilities.unsqueeze(0)
+                #print("Probabilities shape", probabilities.shape)
                 y_pred_batch = (probabilities > 0.5).float()
                 all_scores.extend(probabilities.cpu().numpy())
                 all_labels.extend(y_batch.cpu().numpy())
@@ -535,7 +616,10 @@ class HyperspectralNetworkTrainer():
         specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
         # Precision
         precision = precision_score(all_labels, all_preds, pos_label=1, zero_division=0)
-        print(f"AUC, Test accuracy, sensitivity (recall), specificity, Precision are: {auc:.4f}, {accuracy*100:.4f}%, {sensitivity*100:.4f}%, {specificity*100:.4f}%, {precision*100:.4f}%")
+        # F1
+        f1 = f1_score(all_labels, all_preds, average='binary')  # For binary classification
+        print(f"AUC, Test accuracy, sensitivity (recall), specificity, precision, F1 are: {auc:.4f}, {accuracy*100:.2f}%, " 
+              f"{sensitivity*100:.2f}%, {specificity*100:.2f}%, {precision*100:.2f}%,  {f1*100:.2f}%")
 
         # Print detailed metrics
         print("Classification Report:")
@@ -560,44 +644,71 @@ else:
     g_gpu_device = None
 
 data_loading_start_time = time.time()
-print(f"sampled_data_percentage={sampled_data_percentage:.2f}%; patch_size={g_patch_size}; spectral_bands_to_use={input_spectral_bands}")
+print(f"val data use percentage={sampled_data_percentage:.2f}%; patch_size={g_patch_size}; spectral_bands_to_use={input_spectral_bands}")
 if run_testonly:
-    trn_patients = []
-    val_patients = []
-    patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
+    if global_specifier['data_fold_type'] == 'Patient':
+        trn_patients = []
+        val_patients = []
+        patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
+        joined_patients_str = '_'.join(testonly_patients)
     test_only_num_of_layers = mlp_testonly['nol']
     trainer = HyperspectralNetworkTrainer(test_only_num_of_layers, gpu_device=g_gpu_device, num_layers_of_inherited_model=-1)
     # Write to CSV file
     # CSV file path
-    joined_patients_str = '_'.join(testonly_patients)
-    output_csv_path = f"test_output_{joined_patients_str}_{test_only_num_of_layers}L.csv"
+    #output_csv_path = f"test_output_{global_specifier['nn_arch_name']}_F{global_specifier['tvt_data_fold_idx']+1}_{joined_patients_str}_{test_only_num_of_layers}L.csv"
+    output_csv_path = f"test_output_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{test_only_num_of_layers}L.csv"
     print("Test output will be saved to: ", output_csv_path)
     with open(output_csv_path, mode="w", newline="") as file:
         writer = csv.writer(file)
         # Write header
         writer.writerow(["Patch Path", "True Label", "Predicted Label", "Probabilities"])
-        for tst_patient in testonly_patients:
-            _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
-                                                trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
-            print("Test Patient:", tst_patient, " with ", str(len(test_set)), " accepted patches.")
+        if global_specifier['data_fold_type'] == 'Patient':
+            for tst_patient in testonly_patients:
+                _, _, _, _, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
+                                                    trn_patients, val_patients, [tst_patient], data_precentage=sampled_data_percentage/100.0)
+                print("Test Patient:", tst_patient, " with ", str(len(test_set)), " accepted patches.")
+                test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
+                local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
+                print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
+                true_labels, predicted_labels, probabilities = trainer.test_model(test_dataset)                                
+                # Write rows
+                for path, true, pred, prob in zip(test_set, true_labels, predicted_labels, probabilities):
+                    writer.writerow([path, true, pred, prob])
+            print("----------------------")
+            print(" ")
+        else:
+            test_set = read_dataset_file_list(tvt_data_folds[global_specifier['tvt_data_fold_idx']+1][1])
+            test_labels = labelHSIDataSet(test_set)
             test_dataset = HyperspectralDataset(test_set, test_labels, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
             local_time = datetime.fromtimestamp(time.time()).strftime('%m-%d-%Y %H:%M:%S')
-            print(f"{mlp_testonly['desc']} for {tst_patient} starts at Pacific Time: {local_time}")
-            true_labels, predicted_labels, probabilities = trainer.test_model(test_dataset)                                
-            # Write rows
+            print(f"{mlp_testonly['desc']} for {global_specifier['data_fold_name']} starts at Pacific Time: {local_time}")
+            true_labels, predicted_labels, probabilities = trainer.test_model(test_dataset)
+             # Write rows
             for path, true, pred, prob in zip(test_set, true_labels, predicted_labels, probabilities):
-                writer.writerow([path, true, pred, prob])
+                writer.writerow([path, true, pred, prob])                            
 
-        print("----------------------")
-        print(" ")
-else:        
-    trn_patients = ["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"]
-    val_patients = ["P1"]
-    tst_patients = ["P7", "P11"]
-    patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
-    training_set, training_labels, validation_set, validation_labels, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
-                                                                                                trn_patients, val_patients, tst_patients,
-                                                                                                data_precentage=sampled_data_percentage/100.0)
+else:
+    if global_specifier['data_fold_type'] == 'Patient':
+        trn_patients = tvt_data_folds[global_specifier['tvt_data_fold_idx']][0] #["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"]
+        val_patients = tvt_data_folds[global_specifier['tvt_data_fold_idx']][1] #["P1"]
+        tst_patients = tvt_data_folds[global_specifier['tvt_data_fold_idx']][2] #["P7", "P11"]
+        patient_file_dict = generatePatchListsByPatient(data_root_dir, trn_patients)
+        training_set, training_labels, validation_set, validation_labels, test_set, test_labels = HSIDatasetSplitByPatientLists(patient_file_dict,
+                                                                                                    trn_patients, val_patients, tst_patients,
+                                                                                                    data_precentage=sampled_data_percentage/100.0)
+    else:
+        training_set_read_file = tvt_data_folds[global_specifier['tvt_data_fold_idx']][0]
+        #print(training_set_read_file)
+        training_set = read_dataset_file_list(training_set_read_file, duplicatePos=True)
+        training_labels = labelHSIDataSet(training_set)
+        val_test_dataset_file_list = read_dataset_file_list(tvt_data_folds[global_specifier['tvt_data_fold_idx']][1])
+        random.shuffle(val_test_dataset_file_list)
+        split_index = int(len(val_test_dataset_file_list) * 0.25)
+        validation_set = val_test_dataset_file_list[:split_index]
+        validation_labels = labelHSIDataSet(validation_set)
+        test_set = val_test_dataset_file_list[split_index:]
+        test_labels = labelHSIDataSet(test_set)
+
     '''
     print(training_set)
     print(training_labels)
@@ -607,7 +718,8 @@ else:
     print(test_labels)
     '''
     train_class_counts = Counter(training_labels)
-    print("Training Patients:", trn_patients, "Validation Patients:", val_patients, "Test Patients:", tst_patients)
+    if global_specifier['data_fold_type'] == 'Patient':
+        print("Training Patients:", trn_patients, "Validation Patients:", val_patients, "Test Patients:", tst_patients)
     print(f"[Training vs Validation vs Test] Patch Image Distribution: " + str(len(training_set)) + " " + str(len(validation_set)) + " " + str(len(test_set)))
     print(f"Training True label distribution [0: Non-Tumor; 1: Tumor]:", train_class_counts, Counter(validation_labels), Counter(test_labels))
     train_dataset = HyperspectralDataset(training_set, training_labels, randomize_pos_data=True, bands=range(0,input_spectral_bands), patch_size=g_patch_size, gpu_device=g_gpu_device)
@@ -631,7 +743,7 @@ else:
         is_trained_well = trainer.train_with_validation(train_dataset, val_dataset,
                                       loss_th_to_stop=0.025, accrucy_th_to_stop=0.98, epochs=num_epoches)
         if is_trained_well:
-            trainer.test_model(test_dataset)
+            pass #trainer.test_model(test_dataset)
         else:
             print("The most recent training and validation process didn't converge enough to run the test process.")
 
