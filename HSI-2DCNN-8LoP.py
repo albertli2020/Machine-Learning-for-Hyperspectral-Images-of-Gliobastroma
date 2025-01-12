@@ -53,9 +53,9 @@ attempt_gpu = True
 
 # Define the steps of machine learning processing of HSI data patches
 mlp_steps = [
-    {'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':18},
-    #{'desc':'1-L to 1-L, TVT', 'nol_from':1, 'nol_new':1, 'lr':0.0015, 'noe':5},
-    {'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':25},
+    #{'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':1, 'lr':0.002, 'noe':8}, #18},
+    {'desc':'1-L to 1-L, TVT', 'nol_from':1, 'nol_new':1, 'lr':0.0015, 'noe':6},
+    {'desc':'1-L to 2-L, TVT', 'nol_from':1, 'nol_new':2, 'lr':0.001, 'noe':8}, #25},
     {'desc':'2-L to 3-L, TVT', 'nol_from':2, 'nol_new':3, 'lr':0.00025, 'noe':8},
     {'desc':'3-L to 4-L, TVT', 'nol_from':3, 'nol_new':4, 'lr':0.00005, 'noe':8},
     {'desc':'4-L to 5-L, TVT', 'nol_from':4, 'nol_new':5, 'lr':0.000025, 'noe':8}
@@ -69,11 +69,11 @@ mlp_testonly_3 = {'desc':'3-L Test-only', 'nol':3}
 mlp_testonly_4 = {'desc':'4-L Test-only', 'nol':4}
 mlp_testonly_5 = {'desc':'5-L Test-only', 'nol':5}
 mlp_testonly_6 = {'desc':'6-L Test-only', 'nol':6}
-mlp_testonly = mlp_testonly_6
+mlp_testonly = mlp_testonly_1
 if global_specifier['data_fold_type'] == 'Patient':
     testonly_patients = tvt_data_folds[global_specifier['tvt_data_fold_idx']][2] + tvt_data_folds[global_specifier['tvt_data_fold_idx']][1] + ["P6"]
 #testonly_patients = ["P6"]
-run_testonly = False #True #
+run_testonly = False #False # 
 
 # File path for the log
 mlp_log_file_path = f"mlp_pnn_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_training_log_file.txt"
@@ -213,7 +213,8 @@ class HyperspectralDataset(Dataset):
     def __len__(self):
         n = len(self.image_paths)
         n_batches = n//g_batch_size
-        if n > (n_batches*g_batch_size):
+        delta = n - (n_batches*g_batch_size)
+        if delta > 1:
             n_batches += 1
         return n_batches
     
@@ -700,6 +701,7 @@ else:
         training_set_read_file = tvt_data_folds[global_specifier['tvt_data_fold_idx']][0]
         #print(training_set_read_file)
         training_set = read_dataset_file_list(training_set_read_file, duplicatePos=True)
+        random.shuffle(training_set)
         training_labels = labelHSIDataSet(training_set)
         val_test_dataset_file_list = read_dataset_file_list(tvt_data_folds[global_specifier['tvt_data_fold_idx']][1])
         random.shuffle(val_test_dataset_file_list)
