@@ -1,0 +1,49 @@
+(base) albert@Alberts-Mac-mini albert_HistoDL % python Partition_Per_ROI.py
+total Tumor patches:  12297  total Non-Tumor patches:  16818
+--- Selecting Val/Test ROI set containing Tumor Patches for Fold1
+P3_ROI_01 selected for val_test: 1098
+P5_ROI_01 selected for val_test: 1148
+P4_ROI_01 selected for val_test: 97
+--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold1
+P1_ROI_02 selected for val_test: 1930
+P1_ROI_04 selected for val_test: 271
+P2_ROI_02 selected for val_test: 617
+P3_ROI_02 selected for val_test: 305
+P7_ROI_02 selected for val_test: 218
+5684 (19.52%) patches for val/test; 23431 patches for training
+8 out of 27 ROIs selected for val/test
+--- Selecting Val/Test ROI set containing Tumor Patches for Fold2
+P2_ROI_01 selected for val_test: 1188
+P13_ROI_01 selected for val_test: 1151
+--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold2
+P8_ROI_01 selected for val_test: 1772
+P5_ROI_02 selected for val_test:  1636
+5747 (19.74%) patches for val/test; 23368 patches for training
+4 out of 27 ROIs selected for val/test
+--- Selecting Val/Test ROI set containing Tumor Patches for Fold3
+P10_ROI_01 selected for val_test: 453
+P1_ROI_01 selected for val_test: 1029
+P8_ROI_03 selected for val_test: 958
+--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold3
+P4_ROI_02 selected for val_test:  3720
+6160 (21.16%) patches for val/test; 22955 patches for training
+4 out of 27 ROIs selected for val/test
+--- Selecting Val/Test ROI set containing Tumor Patches for Fold4
+P11_ROI_01 selected for val_test: 1164
+P7_ROI_03 selected for val_test: 1135
+--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold4
+P5_ROI_03 selected for val_test: 1362
+P1_ROI_03 selected for val_test: 1106
+P7_ROI_01 selected for val_test: 43
+P2_ROI_03 selected for val_test: 377
+5187 (17.82%) patches for val/test; 23928 patches for training
+6 out of 27 ROIs selected for val/test
+--- Selecting Val/Test ROI set containing Tumor Patches for Fold5
+P12_ROI_01 selected for val_test: 1162
+P9_ROI_02 selected for val_test: 553
+P9_ROI_01 selected for val_test: 1161
+--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold5
+P8_ROI_02 selected for val_test: 1563
+P5_ROI_04 selected for val_test: 1898
+6337 (21.77%) patches for val/test; 22778 patches for training
+5 out of 27 ROIs selected for val/test

@@ -1,9 +1,32 @@
 import os
 from collections import defaultdict
 import random
+import copy
 
 # Directory ntp_90_90_275
 base_dir = 'ntp_90_90_275'
+
+def select_target_count_val_test(sds, val_test_target_count):
+    val_test_set = []
+    val_test_rois = []
+    val_test_patch_count = 0
+    for roi in sds:
+        patches = sds[roi]
+        p_count = len(patches)
+        if val_test_patch_count + p_count <= val_test_target_count:
+            val_test_set.extend(patches)
+            val_test_patch_count += p_count
+            val_test_rois += [roi]
+            print(roi, "selected for val_test:", p_count)
+        elif val_test_patch_count < val_test_target_count:
+            if val_test_patch_count + (p_count//2) <= val_test_target_count:
+                if random.choice([True, False]):  # Random decision in tie cases
+                    val_test_set.extend(patches)
+                    val_test_patch_count += p_count
+                    val_test_rois += [roi]
+                    print(roi, "selected for val_test: ", p_count)
+    
+    return val_test_rois, val_test_set
 
 # Dictionary to organize patches by Pn_ROI_m
 dataset_T = defaultdict(list)
@@ -26,104 +49,67 @@ for root, dirs, files in os.walk(base_dir):
 
 
 keys = list(dataset_T.keys())
+total_roi_count = len(keys)
 random.shuffle(keys)
 # Create a new dictionary with shuffled keys
 shuffled_dataset_T = {key: dataset_T[key] for key in keys}
+org_shuffled_dataset_T = copy.deepcopy(shuffled_dataset_T)
 keys = list(dataset_NT.keys())
+total_roi_count += len(keys)
 random.shuffle(keys)
 # Create a new dictionary with shuffled keys
 shuffled_dataset_NT = {key: dataset_NT[key] for key in keys}
+org_shuffled_dataset_NT = copy.deepcopy(shuffled_dataset_NT)
 
 # Calculate the total number of patches
 total_patches_T = sum(len(patches) for patches in dataset_T.values())
 total_patches_NT = sum(len(patches) for patches in dataset_NT.values())
-print("total Tumor patches: ", total_patches_T, " total Tumor patches: ", total_patches_NT)
+print("total Tumor patches: ", total_patches_T, " total Non-Tumor patches: ", total_patches_NT)
 
-# Initialize counters
-train_set = []
-val_test_set = []
 
-total_roi_count = 0
-val_test_roi_count = 0
-
-# Distribute patches based on the calculated val_test_target_count
-current_val_test_count = 0
-sds = shuffled_dataset_T
-# Determine the number of patches for validation and testing for the target fold
-val_test_target_count = int(total_patches_T * 0.3)
-print("--- Selecting Val/Test ROI set containing Tumor Patches")
-for roi in sds:
-    total_roi_count += 1
-    patches = sds[roi]
-    p_count = len(patches)
-    if current_val_test_count + p_count <= val_test_target_count:
-        val_test_set.extend(patches)
-        current_val_test_count += p_count
-        val_test_roi_count += 1
-        print(roi, "selected for val_test:", p_count)
-    elif current_val_test_count < val_test_target_count:
-        if current_val_test_count + (p_count//2) <= val_test_target_count:
-            if random.choice([True, False]):  # Random decision in tie cases
-                val_test_set.extend(patches)
-                current_val_test_count += p_count
-                val_test_roi_count += 1
-                print(roi, "selected for val_test: ", p_count)
-            else:
-                train_set.extend(patches)
-                print(roi, "selected for training: ", p_count)
-        else:
-            train_set.extend(patches)
-            print(roi, "selected for training: ", p_count)
+for fold_index in range(1, 6, 1):
+    if fold_index == 5:
+        percentage = 0.3
     else:
-        train_set.extend(patches)
-        print(roi, "selected for training: ", p_count)
+        percentage = 0.2
+    print(f"--- Selecting Val/Test ROI set containing Tumor Patches for Fold{fold_index}")
+    vt_rois_t, vt_set_t = select_target_count_val_test(shuffled_dataset_T, int(total_patches_T * percentage))
+    print(f"--- Selecting Val/Test ROI set containing Non-Tumor Patches for Fold{fold_index}")
+    vt_rois_nt, vt_set_nt = select_target_count_val_test(shuffled_dataset_NT, int(total_patches_NT * percentage))
 
-total_val_test_count = current_val_test_count
-current_val_test_count = 0
+    vt_rois = vt_rois_t + vt_rois_nt
+    vt_set = vt_set_t + vt_set_nt
 
-# Distribute patches based on the calculated val_test_target_count
-current_val_test_count = 0
-sds = shuffled_dataset_NT
-# Determine the number of patches for validation and testing for the target fo
-val_test_target_count = int(total_patches_NT * 0.3)
-print("--- Selecting Val/Test ROI set containing Non-Tumor Patches")
-for roi in sds:
-    total_roi_count += 1
-    patches = sds[roi]
-    p_count = len(patches)
-    if current_val_test_count + p_count <= val_test_target_count:
-        val_test_set.extend(patches)
-        current_val_test_count += p_count
-        val_test_roi_count += 1
-        print(roi, "selected for val_test:", p_count)
-    elif current_val_test_count < val_test_target_count:
-        if current_val_test_count + (p_count//2) <= val_test_target_count:
-            if random.choice([True, False]):  # Random decision in tie cases
-                val_test_set.extend(patches)
-                current_val_test_count += p_count
-                val_test_roi_count += 1
-                print(roi, "selected for val_test: ", p_count)
-            else:
-                train_set.extend(patches)
-                print(roi, "selected for training: ", p_count)
+    for roi in vt_rois_t:
+        del shuffled_dataset_T[roi]
+    for roi in vt_rois_nt:
+        del shuffled_dataset_NT[roi]
+
+    val_test_patch_count = len(vt_set)
+    val_test_roi_count = len(vt_rois)
+    train_set = []
+    for roi in org_shuffled_dataset_T:
+        if roi in vt_rois_t:
+            pass
         else:
+            patches = org_shuffled_dataset_T[roi]
             train_set.extend(patches)
-            print(roi, "selected for training: ", p_count)
-    else:
-        train_set.extend(patches)
-        print(roi, "selected for training: ", p_count)
 
-total_val_test_count += current_val_test_count
+    for roi in org_shuffled_dataset_NT:
+        if roi in vt_rois_nt:
+            pass
+        else:
+            patches = org_shuffled_dataset_NT[roi]
+            train_set.extend(patches)
 
-print(f"{total_val_test_count} ({total_val_test_count*100/(total_patches_T+total_patches_NT):.2f}%) patches for val/test; {len(train_set)} patches for training")
-print(f"{val_test_roi_count} out of {total_roi_count} ROIs selected for val/test")
 
-fold_index = 1
-# Example of saving to text files
-with open(f"train_set_ROI_F{fold_index}.txt", 'w') as f:
-    for item in train_set:
-        f.write("%s\n" % item)
+    print(f"{val_test_patch_count} ({val_test_patch_count*100/(total_patches_T+total_patches_NT):.2f}%) patches for val/test; {len(train_set)} patches for training")
+    print(f"{val_test_roi_count} out of {total_roi_count} ROIs selected for val/test")
+    # Example of saving to text files
+    with open(f"train_set_ROI_F{fold_index}.txt", 'w') as f:
+        for item in train_set:
+            f.write("%s\n" % item)
 
-with open(f"val_test_set_ROI_F{fold_index}.txt", 'w') as f:
-    for item in val_test_set:
-        f.write("%s\n" % item)
+    with open(f"val_test_set_ROI_F{fold_index}.txt", 'w') as f:
+        for item in vt_set:
+            f.write("%s\n" % item)
