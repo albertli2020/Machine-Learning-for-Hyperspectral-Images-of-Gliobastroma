@@ -86,8 +86,6 @@ def splitDataset(patch_list, t_roi_dir, nt_roi_dir,  test_roi_list, val_roi_list
             val_set.extend(nt_roi_dir[roi])
 
     training_set = list(set(patch_list) - set(test_set) - set(val_set))
-    random.shuffle(test_set)
-    random.shuffle(val_set)
     random.shuffle(training_set)
 
     return training_set, val_set, test_set
@@ -130,8 +128,12 @@ class HyperspectralDataset(Dataset):
         npy_path = self.image_files[idx]
         label = self.labels[idx]
         patch_np = np.load(npy_path)  # Load the numpy array
-        patch = patch_np[:87, :87, :]
-        assert patch.shape == (87, 87, 275), f"Unexpected patch size: {patch.shape} at {npy_path}"
+        r_band, g_band, b_band = 425//3, 192//3, 109//3
+        patch = patch_np[:87, :87, [r_band, g_band, b_band]]
+        #patch = patch_np[:87, :87, :]
+        assert patch.shape == (87, 87, 3), f"Unexpected patch size: {patch.shape} at {npy_path}"
+        # patch = patch_np[:87, :87, :]
+        # assert patch.shape == (87, 87, 275), f"Unexpected patch size: {patch.shape} at {npy_path}"
         patch = torch.tensor(patch, dtype=torch.float32)  # Convert to PyTorch tensor
         patch = patch.permute(2, 0, 1)  # Rearrange to (Bands, Height, Width) for PyTorch
         return patch, label
@@ -140,7 +142,7 @@ class HyperspectralDataset(Dataset):
 class VSMModel(nn.Module):
     def __init__(self):
         super(VSMModel, self).__init__()
-        self.conv1 = nn.Conv2d(275, 64, kernel_size=3, padding=1)  # 275 bands as input channels
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, padding=1)  # 3 bands as input channels
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2)  # Downsample by 2
         self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
@@ -167,7 +169,7 @@ class VSMModel(nn.Module):
 def train_model(model, train_loader, val_loader, epochs=10, lr=0.0001, device="cpu"):
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    best_accuracy = 0.80
+    best_accuracy = 0.65
     best_loss = float('inf') 
     
     for epoch in range(epochs):
@@ -222,15 +224,12 @@ def train_model(model, train_loader, val_loader, epochs=10, lr=0.0001, device="c
         #print(cm)
         
         
-        #print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {trn_loss:.4f}, Train Accuracy: {trn_accuracy:.4f} "
-        #      f"Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
-
         trn_loss = train_loss/len(train_loader)
         trn_accuracy = trn_correct/trn_total
         val_loss = val_loss/len(val_loader)
         val_accuracy = val_correct/val_total
 
-        print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {trn_loss:.4f}, Train Accuracy: {100 * trn_accuracy:.2f}%,"
+        print(f"Epoch [{epoch+1}/{epochs}], Train Loss: {trn_loss:.4f}, Train Accuracy: {100 * trn_accuracy:.2f}%, "
               f"Val Loss: {val_loss:.4f}, Val Accuracy: {100 * val_accuracy:.2f}%")
 
         epoch_avg_accuracy = (trn_accuracy + val_accuracy)/2
@@ -239,7 +238,7 @@ def train_model(model, train_loader, val_loader, epochs=10, lr=0.0001, device="c
         if (epoch_avg_loss <= best_loss) and (epoch_avg_accuracy >= best_accuracy):
             best_loss = epoch_avg_loss
             best_accuracy = epoch_avg_accuracy
-            torch.save(model.state_dict(), "svm_model_roi.pth")
+            torch.save(model.state_dict(), "svm_model_roi_rgb.pth")
             print(f"Trained model saved w/ avg loss: {best_loss:.4f}, avg accuracy: {100*best_accuracy:.4f}%")
 
 # Prediction Function
@@ -316,7 +315,7 @@ if __name__ == "__main__":
     # torch.save(model.state_dict(), "vsm_model_roi.pth")
 
     # Load model for prediction
-    model.load_state_dict(torch.load("svm_model_roi.pth"))
+    model.load_state_dict(torch.load("svm_model_roi_rgb.pth"))
     model.to(device)
     predict(model, test_loader, device)
     # Example prediction (replace with an actual patch)
