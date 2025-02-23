@@ -13,7 +13,7 @@ class HyperspectralWorkorderMLP():
     def __init__(self, trainer_class=None, tester_class=None, log_file_prefix=None, attemp_gpu=False):
         self.TrainerClass = trainer_class
         self.TesterClass = tester_class
-        self.trainer_log_file_prefix=log_file_prefix, 
+        self.trainer_log_file_prefix=log_file_prefix
         self.gpu_device = None
         if attemp_gpu:
             if torch.backends.mps.is_available():
