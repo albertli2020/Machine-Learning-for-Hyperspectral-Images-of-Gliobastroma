@@ -14,36 +14,35 @@ Influence Factor = exp(-k * Ranked_Bin_Index)
 where k is a decay rate (e.g., k=0.1 for slower decay, k=0.2 for faster decay),
 and, Ranked_Bin_Index is determined by binning the ranked (mask weight from high to low) band indices.
 
-An example is dividing 275 ranked band indices into 35 ranked 8-band bins:
+An example is dividing 275 ranked band indices into 14 ranked 20-band bins:
 
-Rank_of_band_per_mask_weight      Ranked_Bin_Index
-0   - 7                           0
-8   - 15                          1 
-16  - 23                          2
-24  - 31                          3
-32  - 39                          4
+Rank_of_band_per_mask_weight     Ranked_Bin_Index
+0   - 19                          0
+20  - 39                          1 
+40  - 59                          2
+60  - 79                          3
+80  - 99                          4
 ...
-264 - 271                         33 
-272 - 274                         34 
+240 - 259                         12 
+260 - 274                         13 
 
-Example (35 Ranked-Bins [275 bands into 35 8-band bins], k=0.25)
+Example (14 Ranked-Bins [275 bands into 14 20-band bins], k=0.375)
 
 Ranked_Bin_Index	Influence Factor
 0 	                1.00000
-1                   0.77880
-2                   0.60653
-3 	                0.47237
-4                   0.36788
+1                   0.68729
+3 	                0.32465
+4                   0.22313
 ...
-33                  0.00026
-34 	                0.00000
+12                  0.01111
+13 	                0.00764
 
 """
 
-def calculate_influence_scores_exponential_decay(mask_weight_ranking_list, num_bands=275, k=0.25):
+def calculate_influence_scores_exponential_decay(mask_weight_ranking_list, num_bands=275, k=0.375):
     # Initialize influence scores array with zeros
     influence_scores = np.zeros(num_bands, dtype=float)
-    bin_size = 8
+    bin_size = 20
     num_bins = num_bands//bin_size
     residue_bands = num_bands - num_bins*bin_size
     bin_indices = np.repeat(np.arange(num_bins), bin_size)
@@ -88,15 +87,15 @@ for csv_file in csv_file_list:
     # Extract the last row (latest epoch mask parameters)
     mask_weight_values = df.iloc[-1].values  # Convert to NumPy array
     # Rank all the band indices based on absolute mask weight values (high to low)
-    ranked_indices = sorted(range(len(mask_weight_values)), key=lambda i: abs(mask_weight_values[i]), reverse=True)
-    #ranked_indices = sorted(range(len(mask_weight_values)), key=lambda i: mask_weight_values[i], reverse=True)
+    #ranked_indices = sorted(range(len(mask_weight_values)), key=lambda i: abs(mask_weight_values[i]), reverse=True)
+    ranked_indices = sorted(range(len(mask_weight_values)), key=lambda i: mask_weight_values[i], reverse=True)
     ranked_bands_list.append(ranked_indices)
 
 def wavelength_to_bandindex(wl):
-    return ((wl-400.482)/2.284).astype(int)
+    return ((wl-400.482)/2.184).astype(int)
 
 def bandindex_to_wavelength(bi):
-    return bi*2.284 + 400.482
+    return bi*2.184 + 400.482
 
 influence_scores = calculate_influence_scores_exponential_decay(ranked_bands_list, num_bands=num_input_bands)
 sorted_indices = sorted(range(len(influence_scores)), key=lambda i: influence_scores[i], reverse=True)
@@ -121,7 +120,7 @@ print("Min impact factor of the set made the 2nd cut: ", cut_off_data_to_plot_2)
 cut_off_data_to_plot_3 = (abs(influence_scores[sorted_indices[num_bands_to_make_the_cut_3-1]]) + abs(influence_scores[sorted_indices[num_bands_to_make_the_cut_3]])) / 2.0
 print("Min impact factor of the set made the 3rd cut: ", cut_off_data_to_plot_3)
 
-num_bands_to_plot = 263 #275 #263
+num_bands_to_plot = num_input_bands
 data_to_plot = influence_scores[:num_bands_to_plot]
 data_to_plot_desc = "Influence Score"
 
@@ -154,24 +153,19 @@ ax2.set_xlabel("Band Index")
 # Move the label up
 ax2.xaxis.set_label_position('top')  # Ensure it's at the top
 ax2.xaxis.label.set_verticalalignment('top')  # Align closer to top of ticks
-#ax2.xaxis.label.set_horizontalalignment('right')
 ax2.xaxis.label.set_x(0)  # Move label to left
 
 # Bar height and y-position just above the cut_off line
 bar_height = (1.0 - cut_off_data_to_plot_1)*0.25
-#bar_y_position = 1.02  # Adjust as needed
-top_y_position = ax.get_ylim()[1] * cut_off_data_to_plot_1  # Position bars near the top of the chart
-# Add bars using `ax.bar()`
+top_y_position = ax.get_ylim()[1] * cut_off_data_to_plot_1  # Position bars right above the cut-off-line-1
 ax.bar(bandindex_to_wavelength(np.array(original_indices_cut_1)), bar_height, width=2, color='green', alpha=0.25, align='center', bottom=top_y_position)
-top_y_position = ax.get_ylim()[1] * cut_off_data_to_plot_2  # Position bars near the top of the chart
-# Add bars using `ax.bar()`
+top_y_position = ax.get_ylim()[1] * cut_off_data_to_plot_2  # Position bars right above the cut-off-line-2
 bar_height = (cut_off_data_to_plot_1 - cut_off_data_to_plot_2)*0.5
 ax.bar(bandindex_to_wavelength(np.array(original_indices_cut_2)), bar_height, width=2, color='yellow', alpha=0.25, align='center', bottom=top_y_position)
 
 # Formatting
 plt.xlabel("Band Wavelength (nm)")
 ax.xaxis.label.set_x(0+0.035)  # Move label to left
-#ax.xaxis.label.set_horizontalalignment('right')
 plt.ylabel(data_to_plot_desc)
 plt.title(f"{data_to_plot_desc} Calculated from Learned Band-Wise Mask Weights", fontsize=16)
 plt.legend()
