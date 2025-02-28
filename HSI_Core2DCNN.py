@@ -4,7 +4,10 @@ import torch.nn as nn
 # Define the Core 2DCNN model
 class TumorClassifier2DCNN(nn.Module):
     def init_2D(self, num_input_channels, num_output_channels_1st, num_layers, gpu_device):
-        if num_output_channels_1st <= 32:
+        if num_output_channels_1st <= 16:
+            num_output_channels_2nd = 32
+            num_output_channels_3rd = 64
+        elif num_output_channels_1st <= 32:
             num_output_channels_2nd = 64
             num_output_channels_3rd = 128
         elif num_output_channels_1st <= 64:

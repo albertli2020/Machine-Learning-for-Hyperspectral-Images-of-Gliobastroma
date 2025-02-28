@@ -73,8 +73,7 @@ def load_and_calibrate(file_path, dark_reference_fp, white_reference_fp, show_re
         plt.show()
 
     # Normalize with dark and white references (each is of shape (1, 1004, 826))
-    #print("Before normalization:", data.dtype, dr_data.dtype, wr_data.dtype)
-    #data = (data - dr_data) / (wr_data - dr_data)
+    #print("Before normalization:", data.dtype, dr_data.dtype, wr_data.dtype)    
     transmittance_data = np.zeros((data.shape[0], data.shape[1], input_bands), dtype=np.float32)
     # Process each line in HSI
     for i in range(data.shape[0]):
