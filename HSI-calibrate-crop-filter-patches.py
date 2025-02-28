@@ -1,17 +1,9 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader, random_split
 import numpy as np
 from spectral import open_image
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, confusion_matrix
 import time
 import os
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 
@@ -135,7 +127,6 @@ def is_patch_blinded(patch, show_plot_mean_brightness=False, threshold=0.9):
     Returns:
         float: [0.0, 1.0] ratio of too-bright (over threshold) pixels to the patch area.
     """
-    #print("Checking brightness:", patch.dtype)
     # Calculate the mean brightness across the spectral bands for each pixel
     mean_brightness = np.mean(patch, axis=2)
 
@@ -152,51 +143,50 @@ def is_patch_blinded(patch, show_plot_mean_brightness=False, threshold=0.9):
     # Determine if more than half of the pixels are bright
     total_pixels = patch.shape[0] * patch.shape[1]
     blinded_ratio = bright_pixels / total_pixels
-    #print(f'{bright_pixels} out of {total_pixels} pixels are close to white brightness')
     return blinded_ratio
 
 def is_patch_blinded_per_RGB_saturation(patch_data, saturation_threshold = 0.25): #0.3 # Example threshold (tune empirically)
     # Step 1: Extract RGB bands
     rgb_image = patch_data[:, :, [r_band, g_band, b_band]]  # Shape: (90, 90, 3)
 
-    # Step 2: Convert to HSV format
-    # Ensure values are normalized to [0, 1] for matplotlib.colors
-    #rgb_normalized = rgb_image / rgb_image.max()
+    # Step 2: Convert to HSV format    
     hsv_image = mcolors.rgb_to_hsv(rgb_image)
 
     # Step 3: Binarize based on Saturation threshold    
     binary_mask = hsv_image[:, :, 1] < saturation_threshold
 
-    # Check if the patch has too many "empty" pixels
+    # Check if the patch has too many "overly illuminated" pixels
     blinded_ratio = binary_mask.sum() / binary_mask.size
     return blinded_ratio
 
 def save_patches(patches, output_dir, output_subdir):
     # Save each patch as a .npy file
     output_subdir_ng = output_subdir + '_NG'
+    output_subdir_50g = output_subdir + '_50G'
     for idx, patch in enumerate(patches):
         if idx == 0:
             continue
-        #ratio = is_patch_blinded(patch, idx)
-        ratio = is_patch_blinded_per_RGB_saturation(patch)
-        #if  ratio > 0.495:
-        if  ratio > 0.5:
+        ratio1 = is_patch_blinded(patch, idx)
+        ratio2 = is_patch_blinded_per_RGB_saturation(patch)
+        if  (ratio1 >= 0.5) and (ratio2 >= 0.5):
             os.makedirs(f'{output_dir}/{output_subdir_ng}', exist_ok=True)
-            r = int(ratio * 100)         
+            r = int(ratio1 * 100)         
             patch_filename = f"{output_dir}/{output_subdir_ng}/patch_{r}_{idx}.npy"
-        else:
+        elif (ratio1 < 0.5) and (ratio2 < 0.5):
             os.makedirs(f'{output_dir}/{output_subdir}', exist_ok=True)
             patch_filename = f"{output_dir}/{output_subdir}/patch_{idx}.npy"
-        #print("Patch shape and datatype:", patch.shape, patch.dtype)
-        np.save(patch_filename, patch)#, allow_pickle=False)
+        else:
+            os.makedirs(f'{output_dir}/{output_subdir_50g}', exist_ok=True)
+            r = int(max(ratio1, ratio2) * 100)         
+            patch_filename = f"{output_dir}/{output_subdir_50g}/patch_{r}_{idx}.npy"
+        np.save(patch_filename, patch)
     print(f"Saved {len(patches)} to ", output_dir)
-
 
 def process_and_save_patches(hsi_file, dark_ref_file, white_ref_file, output_dir, output_subdir):
     print(f"Processing {hsi_file}, into {output_subdir}")
     data = load_and_calibrate(hsi_file, dark_ref_file, white_ref_file)
     
-    # Apply windowed averaging on GPU (MPS) for band reduction
+    # Apply (local) windowed averaging on GPU (MPS) for band reduction
     reduced_data = apply_window_average(data)
     
     # Create patches and transfer back to CPU for saving
@@ -241,7 +231,6 @@ for idx, image_path in enumerate(image_paths):
     hsi_file = os.path.join(image_path, "raw.hdr")
     dark_ref_file = os.path.join(image_path, "darkReference.hdr")
     white_ref_file = os.path.join(image_path, "whiteReference.hdr")
-    # Run in parallel to maximize I/O and computation with a thread pool
-    #with ThreadPoolExecutor() as executor:
+    # Run in parallel to maximize I/O and computation with a thread pool with ThreadPoolExecutor() as executor:
     #    executor.submit(process_and_save_patches, hsi_file, dark_ref_file, white_ref_file, output_dir, image_names[idx])
     process_and_save_patches(hsi_file, dark_ref_file, white_ref_file, output_dir, image_names[idx])
