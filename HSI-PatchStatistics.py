@@ -158,6 +158,8 @@ if __name__ == "__main__":
     param = config.get(f"distributed_as", {"selected":"patches among patients"})
     distributed_as = param['selected']
 
+    print(f"{SCRIPT_NAME}, for the distribution of {distributed_as}")
+
     patch_dir = f'ntp_{patch_size}_{patch_size}_{num_bands}'
     t_str = None
     if distributed_as == "patches among patients":

@@ -1,0 +1,143 @@
+{
+    "selected_script": "Visualize Dataset Distribution of Patches, Cubes, and ROIs",
+    "PNN Training Validation and Test": {
+        "script_file": "HSI-ProgressiveNN.py",
+        "actions": {
+            "options": [
+                "test_only",
+                "train_and_val",
+                "train_and_test"
+            ],
+            "selected": "test_only",
+            "disabled": [
+                "train_and_val",
+                "train_and_test"
+            ]
+        },
+        "nn_arch": {
+            "options": [
+                "3Layer_2D_275B",
+                "2Layer_2D_275B",
+                "3Layer_2D_32B"
+            ],
+            "selected": "3Layer_2D_275B"
+        },
+        "test_data_in_fold": {
+            "options": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+            ],
+            "selected": 1
+        },
+        "test_fold6(P6)_using_model_trained_on_data_fold": {
+            "options": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "selected": 1
+        }
+    },
+    "Calc and Plot Influence Scores from Learned Band-wise Mask Weights": {
+        "script_file": "HSI-calculate_plot_influence_scores_and_select_bands_per_learned_mask_filter_weights.py",
+        "embedded_2dcnn_arch": {
+            "options": [
+                "3Layer_2D",
+                "2Layer_2D"
+            ],
+            "selected": "2Layer_2D"
+        }
+    },
+    "Plot Classification Results as Heatmap": {
+        "script_file": "HSI-plot-results-as-heatmap.py",
+        "patient_roi": {
+            "options": [
+                "P1_ROI_02",
+                "P3_ROI_02",
+                "P5_ROI_01",
+                "P7_ROI_02",
+                "P9_ROI_01",
+                "P1_ROI_03",
+                "P2_ROI_02",
+                "P5_ROI_02",
+                "P8_ROI_03",
+                "P11_ROI_01",
+                "P1_ROI_04",
+                "P2_ROI_03",
+                "P5_ROI_04",
+                "P7_ROI_03",
+                "P12_ROI_01",
+                "P5_ROI_03",
+                "P8_ROI_01",
+                "P1_ROI_01",
+                "P3_ROI_01",
+                "P13_ROI_01",
+                "P7_ROI_01",
+                "P8_ROI_02",
+                "P2_ROI_01",
+                "P9_ROI_02",
+                "P10_ROI_01",
+                "P6_ROI_01",
+                "P6_ROI_02",
+                "P6_ROI_03"
+            ],
+            "selected": "P8_ROI_02"
+        },
+        "rejection_threshold": {
+            "options_not_used": [
+                79,
+                87,
+                91,
+                95
+            ],
+            "selected": 95
+        },
+        "range_of_indeterminate": {
+            "options": [
+                0.0,
+                0.25
+            ],
+            "selected": 0.25
+        },
+        "nn_arch": {
+            "options": [
+                "3Layer_2D_275B",
+                "2Layer_2D_275B",
+                "3Layer_2D_32B"
+            ],
+            "selected": "3Layer_2D_275B"
+        },
+        "results_of_P6_using_model_trained_on_data_fold": {
+            "options": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "selected": 3
+        }
+    },
+    "Visualize Dataset Distribution of Patches, Cubes, and ROIs": {
+        "script_file": "HSI-PatchStatistics.py",
+        "distributed_as": {
+            "options": [
+                "patches among patients",
+                "patches among ROIs",
+                "patches among data folds (as test set)",
+                "cubes among patients",
+                "cubes among ROIs",
+                "cubes among data folds (as test set)",
+                "ROIs among patients",
+                "ROIs among data folds (as test set)"
+            ],
+            "selected": "cubes among data folds (as test set)"
+        }
+    }
+}
