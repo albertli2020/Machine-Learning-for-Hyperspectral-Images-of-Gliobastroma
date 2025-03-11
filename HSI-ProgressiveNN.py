@@ -9,10 +9,11 @@ import time
 from datetime import datetime
 from collections import Counter
 import matplotlib.pyplot as plt
+import json
 
 import HSI_Globals
 from HSI_Dataset import HyperspectralDataset
-from HSI_Core2DCNN import TumorClassifier2DCNN
+from HSI_Core2DCNN import TumorClassifier2DCNN, S2L2DCNNModel
 from HSI_Workorder import HyperspectralWorkorderMLP
 
 """
@@ -65,8 +66,11 @@ class HyperspectralNetworkTrainer():
         if num_layers_of_inherited_model == 0:
             pretrained_model = None
         else:
-            pretrained_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
-                                        gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
+            if global_specifier['nn_arch_name'] == '2L2D':
+                pretrained_model = S2L2DCNNModel(gpu_device=gpu_device)
+            else:
+                pretrained_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
+                                            gpu_device=gpu_device, num_layers=num_layers_of_inherited_model)
             pretrained_model.load_state_dict(torch.load(f"PNN_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{num_layers_of_inherited_model}L_best_model.pth"))            
         
         if num_layers_of_inherited_model == self.my_num_layer:
@@ -78,7 +82,10 @@ class HyperspectralNetworkTrainer():
                 print(f"Train with LR={learning_rate}, starting from scratch.")
             else:
                 print(f"Train with LR={learning_rate}, starting by inheriting saved best model parameters from a shallower network: {self.model_save_file}")
-            self.model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
+            if global_specifier['nn_arch_name'] == '2L2D':
+                self.model = S2L2DCNNModel(gpu_device=gpu_device, inherited_model=pretrained_model)
+            else:
+                self.model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
                                     gpu_device=gpu_device, num_layers=self.my_num_layer, inherited_model=pretrained_model)
 
         # This model.to() step might not be needed as the CNN instantiation above was executed with gpu_device specified.
@@ -192,17 +199,22 @@ class HyperspectralNetworkTrainer():
         return target_met
 
 class HyperspectralNetworkTester():
-    def __init__(self, num_layers, input_bands, global_specifier, gpu_device=None):
+    def __init__(self, num_layers, input_bands, global_specifier, gpu_device=None, model_from_fold=None):
         self.my_num_layer = num_layers
         self.gpu_device = gpu_device
-
-        self.model_save_file = f"PNN_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{self.my_num_layer}L_best_model.pth"
+        if model_from_fold is None:
+            self.model_save_file = f"PNN_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{self.my_num_layer}L_best_model.pth"
+        else:
+            self.model_save_file = f"PNN_{global_specifier['nn_arch_name']}_ROI_F{model_from_fold}_{self.my_num_layer}L_best_model.pth"
 
         hls_1st = global_specifier['1st_hl_size']
         # Initialize model
         self.input_bands = input_bands
         
-        pretrained_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
+        if global_specifier['nn_arch_name'] == '2L2D':
+            pretrained_model = S2L2DCNNModel(gpu_device=gpu_device)
+        else:
+            pretrained_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
                                             gpu_device=gpu_device, num_layers=self.my_num_layer)
         print(f"Test only with model parameters to be loaded from {self.model_save_file}")
         # In test-only mode, parameters will be loaded at test time.
@@ -221,13 +233,21 @@ class HyperspectralNetworkTester():
         all_scores = []
         if load_model_from_best_saved:
             if explicit_prev_saved_model_file is None:
-                self.model.load_state_dict(torch.load(self.model_save_file))
+                if True:
+                    self.model.load_state_dict(torch.load(self.model_save_file))
+                else:
+                    # Do the following once to convert CUDA model file to MPS loadable model file
+                    self.model.load_state_dict(torch.load(self.model_save_file, map_location=torch.device('cpu')), strict=False)
+                    self.model.to(self.gpu_device)
+                    torch.save(self.model.state_dict(), self.model_save_file)
             else:
                 self.model.load_state_dict(torch.load(explicit_prev_saved_model_file))
 
         self.model.eval()
         with torch.no_grad():  # Disable gradient computation for efficiency
-            for batch_idx in range(len(dataset)):
+            num_batches = len(dataset)
+            batch_start_time = time.time()
+            for batch_idx in range(num_batches):                
                 X_batch, y_batch = dataset[batch_idx]  # X_batch shape: (batch_size, num_features)
                 outputs = self.model(X_batch).squeeze()
                 probabilities = torch.sigmoid(outputs).detach() # Convert logits to probabilities
@@ -238,9 +258,13 @@ class HyperspectralNetworkTester():
                 all_scores.extend(probabilities.cpu().numpy())
                 all_labels.extend(y_batch.cpu().numpy())
                 all_preds.extend(y_pred_batch.cpu().numpy())
-
+                batch_end_time = time.time()
+                if (batch_idx%4) == 0:
+                    print(f" - Batch [{batch_idx+1}/{num_batches}], {(batch_end_time-batch_start_time):.2f} seconds taken.")
+                batch_start_time = batch_end_time
+                      
         test_end_time = time.time()
-        print(f"Seconds taken to complete Testing: {(test_end_time-test_start_time):.2f}")
+        print(f"Testing took {(test_end_time-test_start_time):.2f} seconds in total.")
         print("True label distribution:", Counter(all_labels))
         print("Predicted label distribution:", Counter(all_preds))
 
@@ -279,11 +303,86 @@ class HyperspectralNetworkTester():
         print(confusion_matrix(all_labels, all_preds))
         return all_labels, all_preds, all_scores
 
-mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_pnn_3L_only
-mlp_steps_testonly = HSI_Globals.mlp_steps_testonly_for_pnn
-#workorders = HSI_Globals.work_orders_275B_train_and_test
-#workorders = HSI_Globals.work_orders_32B_test_only
-workorders = HSI_Globals.work_orders_32RB_train_and_test
 
-mlp = HyperspectralWorkorderMLP(trainer_class=HyperspectralNetworkTrainer, tester_class=HyperspectralNetworkTester, log_file_prefix='mlp_pnn', attemp_gpu=True)
-mlp.fill_orders(mlp_steps_train_and_val, mlp_steps_testonly, workorders)
+
+#workorders = HSI_Globals.work_orders_32RB_train_and_test
+
+workorders_dict = {
+    "3Layer_2D_275B_train_and_test": HSI_Globals.work_orders_275B_train_and_test,
+    "3Layer_2D_32B_train_and_test": HSI_Globals.work_orders_32B_train_and_test,
+    "3Layer_2D_275B_train_and_val": HSI_Globals.work_orders_275B_train_and_val,
+    "3Layer_2D_32B_train_and_val": HSI_Globals.work_orders_32B_train_and_val,
+    "3Layer_2D_275B_test_only": HSI_Globals.work_orders_275B_test_only,
+    "3Layer_2D_32B_test_only": HSI_Globals.work_orders_32B_test_only
+}
+workorders_dict_s2l2d = {
+    #"275B_train_and_test": HSI_Globals.work_orders_275B_s2l2d_train_and_test,
+    #"32B_train_and_test": HSI_Globals.work_orders_32B_s2l2d_train_and_test,
+    "2Layer_2D_275B_train_and_val": HSI_Globals.work_orders_275B_s2l2d_train_and_val,
+    #"32B_train_and_val": HSI_Globals.work_orders_32B_s2l2d_train_and_val,
+    "2Layer_2D_275B_test_only": HSI_Globals.work_orders_275B_s2l2d_test_only,
+    "2Layer_2D_32B_test_only": HSI_Globals.work_orders_32B_s2l2d_test_only
+    }
+
+def pnn_train_val_test(mlp_steps_train_and_val, mlp_steps_testonly, workorders):    
+    mlp = HyperspectralWorkorderMLP(trainer_class=HyperspectralNetworkTrainer, tester_class=HyperspectralNetworkTester, log_file_prefix='mlp_pnn', attemp_gpu=True)
+    mlp.fill_orders(mlp_steps_train_and_val, mlp_steps_testonly, workorders)
+
+CONFIG_FILE = "config.json"
+SCRIPT_NAME = "PNN Training Validation and Test"  # The key in `config.json` for this script
+
+def load_config():
+    """ Load the configuration for this specific script """
+    if not os.path.exists(CONFIG_FILE):
+        raise FileNotFoundError(f"Configuration file '{CONFIG_FILE}' not found.")
+
+    with open(CONFIG_FILE, "r") as f:
+        config_data = json.load(f)
+
+    # Retrieve the script-specific configuration
+    script_config = config_data.get(SCRIPT_NAME, {})
+
+    if not script_config:
+        raise ValueError(f"No configuration found for '{SCRIPT_NAME}' in {CONFIG_FILE}.")
+
+    return script_config
+
+if __name__ == "__main__":
+    # Load script-specific parameters
+    config = load_config()
+
+    param = config.get(f"nn_arch", {"selected":"3Layer_2D_275B"})
+    nn_arch = param['selected']
+
+    param = config.get(f"actions", {"selected":"test_only"})
+    actions = param['selected']
+
+    param = config.get(f"test_data_in_fold", {"selected":1})
+    test_data_in_fold = param['selected']
+
+    param = config.get(f"test_fold6(P6)_using_model_trained_on_data_fold", {"selected":1})
+    test_F6_using_model_trained_on_data_fold = param['selected']
+    
+
+    if nn_arch == "3Layer_2D_275B" or nn_arch == "3Layer_2D_32B" :
+        workorders_key = f"{nn_arch}_{actions}"
+        dict = workorders_dict
+        mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_pnn_3L_only
+        mlp_steps_testonly = HSI_Globals.mlp_steps_testonly_for_pnn
+    else:
+        workorders_key = f"{nn_arch}_{actions}"
+        dict = workorders_dict_s2l2d
+        mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_pnn_s2l2d        
+        mlp_steps_testonly = HSI_Globals.mlp_steps_testonly_for_pnn_s2l2d
+    
+    if test_data_in_fold == 6:
+        for mlp_step in mlp_steps_testonly:
+            mlp_step["mff"] = test_F6_using_model_trained_on_data_fold+10
+
+    if actions == 'train_and_test':
+        workorders = [dict[workorders_key][(test_data_in_fold-1)*2], dict[workorders_key][(test_data_in_fold-1)*2+1]]
+    else:
+        #print(dict[workorders_key])
+        workorders = [dict[workorders_key][test_data_in_fold-1]]
+    print(f"{SCRIPT_NAME} with:{workorders_key}")
+    pnn_train_val_test(mlp_steps_train_and_val, mlp_steps_testonly, workorders)

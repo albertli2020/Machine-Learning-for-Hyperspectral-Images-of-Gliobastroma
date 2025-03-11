@@ -13,7 +13,7 @@ import csv
 
 import HSI_Globals
 from HSI_Dataset import HyperspectralDataset
-from HSI_Core2DCNN import TumorClassifier2DCNN
+from HSI_Core2DCNN import TumorClassifier2DCNN, S2L2DCNNModel
 from HSI_Workorder import HyperspectralWorkorderMLP
 
 """
@@ -59,10 +59,18 @@ class MaskFilterTrainer():
         self.target_accuracy = min_accuracy
         # Initialize model
         self.input_bands = input_bands
-        hls_1st = global_specifier['1st_hl_size']
-        self.pretrained_hsi_nn_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
+        if global_specifier['nn_arch_name'] == '2L2D':
+            self.pretrained_hsi_nn_model = S2L2DCNNModel(gpu_device=gpu_device)
+            if False:
+                #The S2L2D models have already been converted to CPU/MPS compatible now.
+                self.pretrained_hsi_nn_model.load_state_dict(torch.load(self.pretrained_hsi_cnn_model_file, map_location=torch.device('cpu')), strict=False)
+            else:
+                self.pretrained_hsi_nn_model.load_state_dict(torch.load(self.pretrained_hsi_cnn_model_file))
+        else:
+            hls_1st = global_specifier['1st_hl_size']
+            self.pretrained_hsi_nn_model = TumorClassifier2DCNN(num_input_channels=len(input_bands), hidden_layer_size_1st=hls_1st,
                                         gpu_device=gpu_device, num_layers=self.my_num_layer)
-        self.pretrained_hsi_nn_model.load_state_dict(torch.load(self.pretrained_hsi_cnn_model_file))
+            self.pretrained_hsi_nn_model.load_state_dict(torch.load(self.pretrained_hsi_cnn_model_file))
         if gpu_device is not None:
            self.pretrained_hsi_nn_model.to(gpu_device)
         self.model = MaskFilter(len(input_bands), gpu_device)
@@ -187,8 +195,8 @@ class MaskFilterTrainer():
         print(f"Training Complete. Elapsed seconds for this training & validation cycle: {(train_end_time - train_start_time):.2f}")
         return target_met
 
-mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_mf
-workorders = HSI_Globals.work_orders_train_mask_filter
+mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_mf_s2l2d
+workorders = HSI_Globals.work_orders_train_mask_filter_s2l2d
 mlp = HyperspectralWorkorderMLP(trainer_class=MaskFilterTrainer, attemp_gpu=True)
 mlp.fill_orders(mlp_steps_train_and_val, None, workorders)
 

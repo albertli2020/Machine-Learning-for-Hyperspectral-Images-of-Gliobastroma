@@ -1,13 +1,42 @@
 import torch
 import torch.nn as nn
 
+# Define Simpler 2-L 2DCNN Model for 3D Hyperspectral Input
+class S2L2DCNNModel(nn.Module):
+    def __init__(self, gpu_device=None, inherited_model=None):
+        super(S2L2DCNNModel, self).__init__()
+        if inherited_model is not None:
+           self.conv1 = inherited_model.conv1
+        else:
+            self.conv1 = nn.Conv2d(275, 64, kernel_size=3, padding=1, device=gpu_device)  # 275 bands as input channels
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)  # Downsample by 2
+        if inherited_model is not None:
+            self.conv2 = inherited_model.conv2
+        else:
+            self.conv2 = nn.Conv2d(64, 128, kernel_size=3, padding=1, device=gpu_device)
+        self.fc1 = nn.Linear(128 * 43 * 43, 256)  # Flattened feature map size
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 1)  # Binary classification (non-tumor, tumor)
+    
+    def forward(self, x):
+        x = self.conv1(x)  # (275, 87, 87) -> (64, 87, 87)
+        x = self.relu(x)
+        x = self.pool(x)   # (64, 87, 87) -> (64, 43, 43)
+        x = self.conv2(x)  # (64, 43, 43) -> (128, 43, 43)
+        x = self.relu(x)
+        x = x.view(x.size(0), -1)  # Flatten: (128, 43, 43) -> (128 * 43 * 43)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        x = self.relu(x)
+        x = self.fc3(x)
+        return x
+    
 # Define the Core 2DCNN model
 class TumorClassifier2DCNN(nn.Module):
     def init_2D(self, num_input_channels, num_output_channels_1st, num_layers, gpu_device):
-        if num_output_channels_1st <= 16:
-            num_output_channels_2nd = 32
-            num_output_channels_3rd = 64
-        elif num_output_channels_1st <= 32:
+        if num_output_channels_1st <= 32:
             num_output_channels_2nd = 64
             num_output_channels_3rd = 128
         elif num_output_channels_1st <= 64:

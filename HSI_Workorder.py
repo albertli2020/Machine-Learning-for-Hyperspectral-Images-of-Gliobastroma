@@ -100,8 +100,13 @@ class HyperspectralWorkorderMLP():
         print(f"Test-only: patch_size={HSI_Globals.patch_size}; num_spectral_bands_to_use={len(input_spectral_bands)}")
         for mlp_testonly in mlp_steps:
             test_only_num_of_layers = mlp_testonly['nol']
-            tester = self.TesterClass(test_only_num_of_layers, input_spectral_bands, global_specifier, gpu_device=self.gpu_device)
-            output_csv_path = f"test_output_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{test_only_num_of_layers}L.csv"
+            if 'mff' in mlp_testonly:
+                model_from_fold = mlp_testonly['mff']
+                tester = self.TesterClass(test_only_num_of_layers, input_spectral_bands, global_specifier, gpu_device=self.gpu_device, model_from_fold=model_from_fold)
+                output_csv_path = f"test_output_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{test_only_num_of_layers}L_mff{model_from_fold}.csv"
+            else:
+                tester = self.TesterClass(test_only_num_of_layers, input_spectral_bands, global_specifier, gpu_device=self.gpu_device)
+                output_csv_path = f"test_output_{global_specifier['nn_arch_name']}_{global_specifier['data_fold_name']}_{test_only_num_of_layers}L.csv"
             print("Test output will be saved to: ", output_csv_path)
 
             tdf_index = global_specifier['tvt_data_fold_idx']
@@ -121,8 +126,8 @@ class HyperspectralWorkorderMLP():
                  # Write rows
                 for path, true, pred, prob in zip(test_dataset.image_paths, true_labels, predicted_labels, probabilities):
                     writer.writerow([path, true, pred, prob])
-                print("----------------------")
-                print(" ")                        
+                #print("----------------------")
+                #print(" ")                        
 
     def fill_orders(self, spec_of_training_val_steps, spec_of_test_only_steps, workorders):  
         for workorder in workorders:

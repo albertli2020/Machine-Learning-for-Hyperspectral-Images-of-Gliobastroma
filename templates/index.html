@@ -1,0 +1,225 @@
+<head>
+    <title>Hyperspetral Image ML/DL Processing and Results</title> 
+    <style>
+        fieldset {
+            display: flex;
+            flex-wrap: wrap;  /* Allows wrapping to the next line */
+            gap: 10px;        /* Space between items */
+            border: 1px solid #ddd; 
+            padding: 10px;
+        }
+
+        fieldset label {
+            display: flex;
+            align-items: center;
+            width: calc(20% - 10px);  /* 5 items per row */
+            min-width: 120px;  /* Ensure readability */
+        }
+        /* Styling to keep button and progress bar on the same line */
+        .container {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Adds some space between button and progress bar */
+            margin-top: 20px; /* Adjust margin as needed */
+        }
+        progress {
+            width: 150px; /* Adjust width as needed */
+            height: 10px;
+            display: none; /* Hidden initially */
+        }
+    </style>
+</head>
+
+<h3>Select a Script:</h3>
+<div id="script-select">
+    <!-- Populated dynamically -->
+</div>
+
+<h3>Configuration:</h3>
+<div id="config-options">
+    <!-- Populated dynamically -->
+</div>
+
+<!-- Adding more line spacing by wrapping the button in a div with some margin -->
+<div class="container"">
+    <button id="execute-btn" onclick="executeScript()">Execute Script</button>
+    <progress id="progressBar" value="0" max="100"></progress>
+</div>
+
+<h3>Output <button onclick="clearOutput()">Clear</button></h3>
+<pre id="output" style="border: 1px solid #ddd; padding: 10px; height: 400px; overflow-y: auto;"></pre>
+
+<script>
+    let configData = {};
+    let scripts = {{ scripts | tojson }};  // Ensure that it's a JSON object, not an array
+    let selectedScript = "{{ selected_script }}"; // Injected from backend (Flask)
+
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("progressBar").style.display = "none";
+        loadScripts(); // Initialize scripts on DOM content load
+        if (selectedScript) {
+            loadConfig(selectedScript); // Load configuration for the initially selected script
+        }
+    });
+
+    async function loadScripts() {
+        let scriptSelectionDiv = document.getElementById("script-select");
+        scriptSelectionDiv.innerHTML = ""; // Clear any existing content
+
+        Object.keys(scripts).forEach(script => {
+            let radio = document.createElement("input");
+            radio.type = "radio";
+            radio.name = "script";
+            radio.value = script;
+
+            // Set the initially selected script
+            if (!selectedScript) {
+                selectedScript = script; // If no script is selected, use the first one
+                radio.checked = true;
+                loadConfig(selectedScript); // Load its configuration
+            } else if (script === selectedScript) {
+                radio.checked = true;
+            }
+
+            radio.onclick = () => {
+                selectedScript = script;
+                loadConfig(script);
+            };
+
+            let label = document.createElement("label");
+            label.appendChild(radio);
+            label.appendChild(document.createTextNode(script));
+            scriptSelectionDiv.appendChild(label);
+            scriptSelectionDiv.appendChild(document.createElement("br"));
+        });
+    }
+
+    async function loadConfig(script) {
+        // Fetch configuration for the selected script
+        let response = await fetch("/get_config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ script })
+        });
+
+        configData = await response.json();
+        renderConfigUI(script, configData);
+    }
+
+    function renderConfigUI(script, config) {
+        let configDiv = document.getElementById("config-options");
+        configDiv.innerHTML = ""; // Clear any existing configuration
+
+        Object.entries(config).forEach(([key, value]) => {
+            if (value.options) {
+                let fieldset = document.createElement("fieldset");
+                let legend = document.createElement("legend");
+                legend.textContent = key;
+                fieldset.appendChild(legend);
+
+                value.options.forEach(option => {
+                    let radio = document.createElement("input");
+                    radio.type = "radio";
+                    radio.name = key;
+                    radio.value = option;
+                    if (option === value.selected) radio.checked = true;
+                    if (value.disabled?.includes(option) || false) radio.disabled = true;
+                    //radio.onclick = () => updateConfig(script, key, option);
+                    //// Add event listener to capture changes to the selected configuration option
+                    radio.addEventListener("change", () => {
+                        console.log('Option selected: ${option}');
+                        updateConfig(script, key, option);
+                    });
+
+                    let label = document.createElement("label");
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(option));
+                    fieldset.appendChild(label);
+                });
+
+                configDiv.appendChild(fieldset);
+            }
+        });
+    }
+
+    async function updateConfig(script, key, selectedValue) {
+        // Update the selected configuration and send to the server
+        configData[key].selected = selectedValue;
+        await fetch("/update_config", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ script, config: configData })
+        });
+    }
+
+    async function executeScript() {
+        // Execute the selected script and display the result
+        if (!selectedScript) return;
+        const executeButton = document.getElementById('execute-btn');
+        const progressBar = document.getElementById("progressBar");
+        const outputBox = document.getElementById("output");
+        executeButton.disabled = true;
+        progressBar.style.display = "block";
+        progressBar.value = 0;
+        let progress = 0;
+        const start_str = encodeURIComponent(selectedScript)
+        const queryString = "?script=" + start_str;
+        const baseUrl = "/execute";  // The base URL for your request
+        const fullUrl = baseUrl + queryString;
+
+        const response = await fetch(fullUrl, {
+            method: "GET",
+            headers: {"Accept": "application/json"}
+        });
+
+        // Check if the response is valid
+        if (response.ok) {
+            // Read the response as a stream
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let data = '';
+        
+            // Read the response stream in chunks
+            while (!done) {
+                const { value, done: isDone } = await reader.read();
+                if (progress < 100) {
+                    progress += 2
+                }
+                progressBar.value = progress;
+                done = isDone;
+                data += decoder.decode(value, { stream: true });
+            
+                // Process the incoming chunk as a JSON object
+                const lines = data.split('\n');
+                for (let line of lines) {
+                    if (line.trim()) {
+                        console.log(line);
+                        try {
+                            const jsonData = JSON.parse(line);  // Parse the JSON
+                            console.log(jsonData);  // Handle the JSON object (update UI, etc.)
+
+                            // For example, append to a textarea or pre element
+                            outputBox.textContent += jsonData.output + "\n";
+                            outputBox.scrollTop = outputBox.scrollHeight; // Auto-scroll to bottom
+                        } catch (error) {
+                            console.error("Error parsing JSON:", error);
+                        }
+                    }
+                }
+                // Keep only the last partial line in `data` for the next iteration
+                data = lines[lines.length - 1];
+            }
+            outputBox.textContent += "-".repeat(40) + "\n";
+            outputBox.scrollTop = outputBox.scrollHeight; // Auto-scroll to bottom
+        }   
+        progressBar.style.display = "none";
+        executeButton.disabled = false;
+    }
+
+    async function clearOutput() {
+        // Clear the script output
+        //await fetch("/clear_output", { method: "POST" });
+        document.getElementById("output").innerText = "";
+    }
+</script>

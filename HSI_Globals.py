@@ -34,7 +34,8 @@ tvt_data_folds = [  ["train_set_Patient_F1.txt", "val_set_Patient_F1.txt", "test
                     ["train_set_ROI_F12.txt", "val_set_ROI_F12.txt", "test_set_ROI_F12.txt"],  # this is manual ROI fold2, with val and test sets separated
                     ["train_set_ROI_F13.txt", "val_set_ROI_F13.txt", "test_set_ROI_F13.txt"],  # this is manual ROI fold3, with val and test sets separated
                     ["train_set_ROI_F14.txt", "val_set_ROI_F14.txt", "test_set_ROI_F14.txt"],  # this is manual ROI fold4, with val and test sets separated
-                    ["train_set_ROI_F15.txt", "val_set_ROI_F15.txt", "test_set_ROI_F15.txt"]   # this is manual ROI fold5, with val and test sets separated
+                    ["train_set_ROI_F15.txt", "val_set_ROI_F15.txt", "test_set_ROI_F15.txt"],  # this is manual ROI fold5, with val and test sets separated
+                    ["", "", "test_set_ROI_F16.txt"]   # this is special ROI fold6, with test sets only for P6
                 ]
 
 tvt_data_identifiers = [[["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13"], ["P1"], ["P7", "P11"]], 
@@ -57,7 +58,8 @@ tvt_data_identifiers = [[["P2", "P3", "P4", "P5", "P8", "P9", "P10", "P12", "P13
                             ['P9_ROI_01','P2_ROI_02','P2_ROI_03'], ['P5_ROI_03', 'P8_ROI_01', 'P1_ROI_01', 'P3_ROI_01', 'P13_ROI_01']],
                         [ [ 'P4_ROI_01', 'P9_ROI_01', 'P5_ROI_01', 'P12_ROI_01', 'P3_ROI_01', 'P8_ROI_03', 'P11_ROI_01', 'P1_ROI_01', 'P13_ROI_01', 'P1_ROI_04',
                             'P8_ROI_01', 'P3_ROI_02', 'P5_ROI_02', 'P5_ROI_03', 'P2_ROI_03', 'P5_ROI_04', 'P1_ROI_02', 'P7_ROI_02', 'P2_ROI_02', 'P4_ROI_02'],
-                            ['P7_ROI_03','P1_ROI_03'], ['P7_ROI_01', 'P8_ROI_02', 'P2_ROI_01', 'P9_ROI_02', 'P10_ROI_01'] ]
+                            ['P7_ROI_03','P1_ROI_03'], ['P7_ROI_01', 'P8_ROI_02', 'P2_ROI_01', 'P9_ROI_02', 'P10_ROI_01'] ],
+                        [ [], [], ['P6_ROI_01', 'P6_ROI_02', 'P6_ROI_03'] ],    
                         ]
 
 
@@ -75,6 +77,14 @@ global_specifier_2D_ROI_F12 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'd
 global_specifier_2D_ROI_F13 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':24, '1st_hl_size':256}
 global_specifier_2D_ROI_F14 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':24, '1st_hl_size':256}
 global_specifier_2D_ROI_F15 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':24, '1st_hl_size':256}
+global_specifier_2D_ROI_F16 = {'nn_arch_name': '2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':24, '1st_hl_size':256}
+
+global_specifier_2L2D_ROI_F11 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':24, '1st_hl_size':64}
+global_specifier_2L2D_ROI_F12 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':24, '1st_hl_size':64}
+global_specifier_2L2D_ROI_F13 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':24, '1st_hl_size':64}
+global_specifier_2L2D_ROI_F14 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':24, '1st_hl_size':64}
+global_specifier_2L2D_ROI_F15 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':24, '1st_hl_size':64}
+global_specifier_2L2D_ROI_F16 = {'nn_arch_name': '2L2D', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':24, '1st_hl_size':64}
 
 global_specifier_2D_110B_ROI_F10 = {'nn_arch_name': '2D_110B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F10', 'tvt_data_fold_idx': 4+5+4, 'batch_size':24, '1st_hl_size':128}
 global_specifier_2D_110B_ROI_F9 = {'nn_arch_name': '2D_110B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F9', 'tvt_data_fold_idx': 4+5+3, 'batch_size':24, '1st_hl_size':128}
@@ -99,12 +109,21 @@ global_specifier_2D_32B_ROI_F12 = {'nn_arch_name': '2D_32B', 'data_fold_type': '
 global_specifier_2D_32B_ROI_F13 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32B_ROI_F14 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32B_ROI_F15 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2D_32B_ROI_F16 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':32, '1st_hl_size':64}
+
+global_specifier_2L2D_32B_ROI_F11 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2L2D_32B_ROI_F12 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2L2D_32B_ROI_F13 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2L2D_32B_ROI_F14 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2L2D_32B_ROI_F15 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2L2D_32B_ROI_F16 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':32, '1st_hl_size':64}
 
 global_specifier_2D_32RB_ROI_F11 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32RB_ROI_F12 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32RB_ROI_F13 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32RB_ROI_F14 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32RB_ROI_F15 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':32, '1st_hl_size':64}
+global_specifier_2D_32RB_ROI_F16 = {'nn_arch_name': '2D_32RB', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':32, '1st_hl_size':64}
 
 global_specifier_2D_27B_ROI_F11 = {'nn_arch_name': '2D_27B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_27B_ROI_F12 = {'nn_arch_name': '2D_27B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':32, '1st_hl_size':64}
@@ -129,13 +148,48 @@ work_orders_275B_train_and_test = [
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F11, 'min_accuracy':0.40},
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40}, 
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40}, 
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40},
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
     ]
+
+work_orders_275B_test_only = [
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F11, 'min_accuracy':0.40},    
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40},    
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F16, 'min_accuracy':0.40},
+    ]
+
+work_orders_275B_s2l2d_test_only = [
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F11, 'min_accuracy':0.40}, 
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F13, 'min_accuracy':0.40}, 
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F16, 'min_accuracy':0.40},
+    ]
+
+work_orders_275B_train_and_val = [
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F11, 'min_accuracy':0.40},    
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40},    
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
+    ]
+
+work_orders_275B_s2l2d_train_and_val = [
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F11, 'min_accuracy':0.40},    
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F13, 'min_accuracy':0.40},    
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F15, 'min_accuracy':0.40},
+    ]
+
 
 work_orders_110B_train_and_test = [
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_110, 'global_specifier': global_specifier_2D_110BS_ROI_F10, 'min_accuracy':0.60}, 
@@ -176,9 +230,35 @@ work_orders_32B_train_and_test = [
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F15, 'min_accuracy':0.40},
     ]
 
+work_orders_32B_test_only = [
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F11, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F13, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F16, 'min_accuracy':0.40},
+    ]
+
+work_orders_32B_s2l2d_test_only = [
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F11, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F13, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2L2D_32B_ROI_F16, 'min_accuracy':0.40},
+    ]
+
+work_orders_32B_train_and_val = [
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F11, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F13, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F15, 'min_accuracy':0.40},
+    ]
+
 work_orders_32RB_train_and_test = [
-    {'train_or_test':0, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40}, 
-    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40},
+    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40}, 
+    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40},
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F12, 'min_accuracy':0.40},
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F12, 'min_accuracy':0.40},
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F13, 'min_accuracy':0.40}, 
@@ -228,20 +308,20 @@ work_orders_1red_train_and_test = [
     {'train_or_test':1, 'bands_to_use':input_spectral_bands_1red, 'global_specifier': global_specifier_2D_1RED_ROI_F6, 'min_accuracy':0.40},
     ]
 
-work_orders_32B_test_only = [
-    {'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F11, 'min_accuracy':0.40},
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F12, 'min_accuracy':0.40},
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F13, 'min_accuracy':0.40},
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F14, 'min_accuracy':0.40},
-    #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F15, 'min_accuracy':0.40},
+work_orders_train_mask_filter = [
+    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F11, 'min_accuracy':0.30}, 
+    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40}, 
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
+    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
     ]
 
-work_orders_train_mask_filter = [
-    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F11, 'min_accuracy':0.30}, 
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F12, 'min_accuracy':0.40},
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F13, 'min_accuracy':0.40}, 
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F14, 'min_accuracy':0.40},
-    #{'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2D_ROI_F15, 'min_accuracy':0.40},
+work_orders_train_mask_filter_s2l2d = [
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F11, 'min_accuracy':0.40}, 
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F13, 'min_accuracy':0.40}, 
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_all_275, 'global_specifier': global_specifier_2L2D_ROI_F15, 'min_accuracy':0.40},
     ]
 
 # Define the steps of PNN Training and Validation machine learning processing of HSI data patches
@@ -271,21 +351,28 @@ mlp_steps_train_and_val_for_pnn_3L_only = [
     {'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.00001, 'noe':16} #0.00002
     ]
 
+mlp_steps_train_and_val_for_pnn_s2l2d = [
+    {'desc':'2-L to 2-L, TVT', 'nol_from':2, 'nol_new':2, 'lr':0.00001, 'noe':16} #0.00002
+    ]
 # Define the steps of PNN Testing machine learning processing of HSI data patches
 mlp_pnn_testonly_1L = {'desc':'1-L Test-only', 'nol':1}
 mlp_pnn_testonly_2L = {'desc':'2-L Test-only', 'nol':2}
 mlp_pnn_testonly_3L = {'desc':'3-L Test-only', 'nol':3}
 mlp_pnn_testonly_4L = {'desc':'4-L Test-only', 'nol':4}
 mlp_steps_testonly_for_pnn = [mlp_pnn_testonly_3L]
+mlp_steps_testonly_for_pnn_s2l2d = [mlp_pnn_testonly_2L]
 
 # Define the steps of Mask Filter Training and Validation machine learning processing of HSI data patches
 mlp_steps_train_and_val_for_mf = [
-    #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0025, 'noe':2},
+    #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0025, 'noe':8},
     #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.00125, 'noe':2},
-    {'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.000625, 'noe':2},
+    #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.000625, 'noe':2},
     #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0002, 'noe':8}, #24
-    #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0001, 'noe':16},
+    {'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0001, 'noe':8},#16},
     #{'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.0000375, 'noe':6},
     #{'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.000025, 'noe':8},
     #{'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.00001, 'noe':8},
     ]
+
+mlp_steps_train_and_val_for_mf_s2l2d = [
+    {'desc':'2-L to 2-L, TVT', 'nol_from':2, 'nol_new':2, 'lr':0.000005, 'noe':16} ]
