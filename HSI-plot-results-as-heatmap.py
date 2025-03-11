@@ -66,9 +66,9 @@ def read_csv(file_path, nn_arch_fold_str, mff_str=None):
         f1_score = (2 * prec * sens) / (prec + sens) if (prec + sens) > 0.00000001 else 0.0
         auc = roc_auc_score(y_true, y_score)
         if mff_str:
-            metrics_str = f"As reference, model {nn_arch_fold_str} for {mff_str} has these perf measures: auc={auc:.4f} accu={accu*100:.2f}% sens={sens*100:.2f}% spec={spec*100:.2f}% prec*100={prec:.2f}% f1={f1_score:.4f}"
+            metrics_str = f"As reference, model {nn_arch_fold_str} for {mff_str} has these perf measures: auc={auc:.4f} accu={accu*100:.2f}% sens={sens*100:.2f}% spec={spec*100:.2f}% prec={prec*100:.2f}% f1={f1_score:.4f}"
         else:
-            metrics_str = f"As reference, model {nn_arch_fold_str} has these perf measures: auc={auc:.4f} accu={accu*100:.2f}% sens={sens*100:.2f}% spec={spec*100:.2f}% prec*100={prec:.2f}% f1={f1_score:.4f}"
+            metrics_str = f"As reference, model {nn_arch_fold_str} has these perf measures: auc={auc:.4f} accu={accu*100:.2f}% sens={sens*100:.2f}% spec={spec*100:.2f}% prec={prec*100:.2f}% f1={f1_score:.4f}"
         print(metrics_str)
     return data
 

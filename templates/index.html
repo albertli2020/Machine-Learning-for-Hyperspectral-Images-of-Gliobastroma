@@ -106,37 +106,69 @@
         renderConfigUI(script, configData);
     }
 
+    function rendRadioUI(parent_fieldset, script, main_key, option, selected_option, disabled_options, hidden_options, reload_when_selection_changes) {
+        let radio = document.createElement("input");
+        radio.type = "radio";
+        radio.name = main_key;
+        radio.value = option;
+        if (option === selected_option) radio.checked = true;
+        if (disabled_options?.includes(option) || false) radio.disabled = true;
+        if (hidden_options?.includes(option) || false) radio.hidden = true;
+        //radio.onclick = () => updateConfig(script, key, option);
+        //// Add event listener to capture changes to the selected configuration option
+        radio.addEventListener("change", () => {
+            console.log('Option selected: ${option}');
+            updateConfig(script, main_key, option);
+            if (reload_when_selection_changes) {
+                loadConfig(script);
+            }
+
+        });
+
+        let label = document.createElement("label");
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(option));
+        if (hidden_options?.includes(option) || false) label.style.visibility = 'hidden';
+        parent_fieldset.appendChild(label);
+    }
     function renderConfigUI(script, config) {
         let configDiv = document.getElementById("config-options");
         configDiv.innerHTML = ""; // Clear any existing configuration
 
         Object.entries(config).forEach(([key, value]) => {
-            if (value.options) {
+            let show_this_item = true;
+            if (value.show_for_these_selected) {
+                Object.entries(value.show_for_these_selected).forEach(([show_for_key, show_for_values]) => {
+                    if(config[show_for_key]) {
+                        show_this_item = false;
+                        if (show_for_values.includes(config[show_for_key].selected)) {
+                            show_this_item = true;
+                        }
+                    }
+                });
+            }
+            if (show_this_item && value.options) {
                 let fieldset = document.createElement("fieldset");
                 let legend = document.createElement("legend");
                 legend.textContent = key;
                 fieldset.appendChild(legend);
 
-                value.options.forEach(option => {
-                    let radio = document.createElement("input");
-                    radio.type = "radio";
-                    radio.name = key;
-                    radio.value = option;
-                    if (option === value.selected) radio.checked = true;
-                    if (value.disabled?.includes(option) || false) radio.disabled = true;
-                    //radio.onclick = () => updateConfig(script, key, option);
-                    //// Add event listener to capture changes to the selected configuration option
-                    radio.addEventListener("change", () => {
-                        console.log('Option selected: ${option}');
-                        updateConfig(script, key, option);
+                if (value.sub_groups) {
+                    value.sub_groups.forEach(option_sub_group => {                        
+                        let fieldset_sub_group = document.createElement("fieldset");
+                        let legend_sub_group = document.createElement("legend");
+                        legend_sub_group.textContent = option_sub_group;
+                        fieldset_sub_group.appendChild(legend_sub_group);
+                        value.options[option_sub_group].forEach(option => {
+                            rendRadioUI(fieldset_sub_group, script, key, option, value.selected, value.disabled, value.hidden, value.reload_when_selection_changes);
+                        });
+                        fieldset.appendChild(fieldset_sub_group);
                     });
-
-                    let label = document.createElement("label");
-                    label.appendChild(radio);
-                    label.appendChild(document.createTextNode(option));
-                    fieldset.appendChild(label);
-                });
-
+                } else {
+                    value.options.forEach(option => {
+                        rendRadioUI(fieldset, script, key, option, value.selected, value.disabled, value.hidden, value.reload_when_selection_changes);
+                    });
+                }
                 configDiv.appendChild(fieldset);
             }
         });

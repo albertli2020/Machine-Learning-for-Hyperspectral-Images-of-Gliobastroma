@@ -15,6 +15,7 @@ import HSI_Globals
 from HSI_Dataset import HyperspectralDataset
 from HSI_Core2DCNN import TumorClassifier2DCNN, S2L2DCNNModel
 from HSI_Workorder import HyperspectralWorkorderMLP
+from HSI_PlotModelPerf import plot_model_perf_w_radar_and_table
 
 """
 This Python program uses incremental learning through layer-wise expansion.
@@ -303,8 +304,6 @@ class HyperspectralNetworkTester():
         print(confusion_matrix(all_labels, all_preds))
         return all_labels, all_preds, all_scores
 
-
-
 #workorders = HSI_Globals.work_orders_32RB_train_and_test
 
 workorders_dict = {
@@ -379,10 +378,13 @@ if __name__ == "__main__":
         for mlp_step in mlp_steps_testonly:
             mlp_step["mff"] = test_F6_using_model_trained_on_data_fold+10
 
+    print(f"{SCRIPT_NAME} with: {workorders_key}")
     if actions == 'train_and_test':
-        workorders = [dict[workorders_key][(test_data_in_fold-1)*2], dict[workorders_key][(test_data_in_fold-1)*2+1]]
+        #workorders = [dict[workorders_key][(test_data_in_fold-1)*2], dict[workorders_key][(test_data_in_fold-1)*2+1]]
+        print(" -- It would take much longer than a couple minutes to run training and test on this hardware.")
+        print(" -- Instead of actual training and test, here are the plots of the model's performance metrics.")
+        plot_model_perf_w_radar_and_table(nn_arch) 
     else:
         #print(dict[workorders_key])
         workorders = [dict[workorders_key][test_data_in_fold-1]]
-    print(f"{SCRIPT_NAME} with:{workorders_key}")
-    pnn_train_val_test(mlp_steps_train_and_val, mlp_steps_testonly, workorders)
+        pnn_train_val_test(mlp_steps_train_and_val, mlp_steps_testonly, workorders)

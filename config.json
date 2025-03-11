@@ -8,10 +8,9 @@
                 "train_and_val",
                 "train_and_test"
             ],
-            "selected": "test_only",
+            "selected": "train_and_test",
             "disabled": [
-                "train_and_val",
-                "train_and_test"
+                "train_and_val"
             ]
         },
         "nn_arch": {
@@ -31,7 +30,7 @@
                 5,
                 6
             ],
-            "selected": 1
+            "selected": 3
         },
         "test_fold6(P6)_using_model_trained_on_data_fold": {
             "options": [
@@ -57,37 +56,58 @@
     "Plot Classification Results as Heatmap": {
         "script_file": "HSI-plot-results-as-heatmap.py",
         "patient_roi": {
-            "options": [
-                "P1_ROI_02",
-                "P3_ROI_02",
-                "P5_ROI_01",
-                "P7_ROI_02",
-                "P9_ROI_01",
-                "P1_ROI_03",
-                "P2_ROI_02",
-                "P5_ROI_02",
-                "P8_ROI_03",
-                "P11_ROI_01",
-                "P1_ROI_04",
-                "P2_ROI_03",
-                "P5_ROI_04",
-                "P7_ROI_03",
-                "P12_ROI_01",
-                "P5_ROI_03",
-                "P8_ROI_01",
-                "P1_ROI_01",
-                "P3_ROI_01",
-                "P13_ROI_01",
-                "P7_ROI_01",
-                "P8_ROI_02",
-                "P2_ROI_01",
-                "P9_ROI_02",
-                "P10_ROI_01",
-                "P6_ROI_01",
-                "P6_ROI_02",
-                "P6_ROI_03"
-            ],
-            "selected": "P8_ROI_02"
+            "options": {
+                "F1": [
+                    "P1_ROI_02",
+                    "P3_ROI_02",
+                    "P5_ROI_01",
+                    "P7_ROI_02",
+                    "P9_ROI_01"
+                ],
+                "F2": [
+                    "P1_ROI_03",
+                    "P2_ROI_02",
+                    "P5_ROI_02",
+                    "P8_ROI_03",
+                    "P11_ROI_01"
+                ],
+                "F3": [
+                    "P1_ROI_04",
+                    "P2_ROI_03",
+                    "P5_ROI_04",
+                    "P7_ROI_03",
+                    "P12_ROI_01"
+                ],
+                "F4": [
+                    "P5_ROI_03",
+                    "P8_ROI_01",
+                    "P1_ROI_01",
+                    "P3_ROI_01",
+                    "P13_ROI_01"
+                ],
+                "F5": [
+                    "P7_ROI_01",
+                    "P8_ROI_02",
+                    "P2_ROI_01",
+                    "P9_ROI_02",
+                    "P10_ROI_01"
+                ],
+                "F6 (not in the official 5-fold partitioning)": [
+                    "P6_ROI_01",
+                    "P6_ROI_02",
+                    "P6_ROI_03"
+                ]
+            },
+            "reload_when_selection_changes": 1,
+            "selected": "P5_ROI_04",
+            "sub_groups": [
+                "F1",
+                "F2",
+                "F3",
+                "F4",
+                "F5",
+                "F6 (not in the official 5-fold partitioning)"
+            ]
         },
         "rejection_threshold": {
             "options_not_used": [
@@ -111,7 +131,7 @@
                 "2Layer_2D_275B",
                 "3Layer_2D_32B"
             ],
-            "selected": "3Layer_2D_275B"
+            "selected": "3Layer_2D_32B"
         },
         "results_of_P6_using_model_trained_on_data_fold": {
             "options": [
@@ -121,7 +141,14 @@
                 4,
                 5
             ],
-            "selected": 3
+            "selected": 1,
+            "show_for_these_selected": {
+                "patient_roi": [
+                    "P6_ROI_01",
+                    "P6_ROI_02",
+                    "P6_ROI_03"
+                ]
+            }
         }
     },
     "Visualize Dataset Distribution of Patches, Cubes, and ROIs": {
@@ -131,13 +158,24 @@
                 "patches among patients",
                 "patches among ROIs",
                 "patches among data folds (as test set)",
+                "hidden1",
+                "hidden2",
                 "cubes among patients",
                 "cubes among ROIs",
                 "cubes among data folds (as test set)",
+                "hidden3",
+                "hidden4",
                 "ROIs among patients",
                 "ROIs among data folds (as test set)"
             ],
-            "selected": "cubes among data folds (as test set)"
+            "selected": "ROIs among data folds (as test set)",
+            "hidden": [
+                "hidden1",
+                "hidden2",
+                "hidden3",
+                "hidden4",
+                "hidden5"
+            ]
         }
     }
 }
