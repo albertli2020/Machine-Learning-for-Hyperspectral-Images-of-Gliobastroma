@@ -140,9 +140,12 @@
             if (value.show_for_these_selected) {
                 Object.entries(value.show_for_these_selected).forEach(([show_for_key, show_for_values]) => {
                     if(config[show_for_key]) {
-                        show_this_item = false;
+                        //show_this_item = false;
                         if (show_for_values.includes(config[show_for_key].selected)) {
-                            show_this_item = true;
+                            //show_this_item = true;
+                        }
+                        else {
+                            show_this_item = false;
                         }
                     }
                 });

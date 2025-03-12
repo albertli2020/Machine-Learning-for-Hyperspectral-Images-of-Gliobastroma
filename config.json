@@ -1,5 +1,5 @@
 {
-    "selected_script": "Visualize Dataset Distribution of Patches, Cubes, and ROIs",
+    "selected_script": "PNN Training Validation and Test",
     "PNN Training Validation and Test": {
         "script_file": "HSI-ProgressiveNN.py",
         "actions": {
@@ -9,7 +9,8 @@
                 "train_and_test"
             ],
             "selected": "train_and_test",
-            "disabled": [
+            "reload_when_selection_changes": 1,
+            "disabled_dnu": [
                 "train_and_val"
             ]
         },
@@ -19,7 +20,14 @@
                 "2Layer_2D_275B",
                 "3Layer_2D_32B"
             ],
-            "selected": "3Layer_2D_275B"
+            "selected": "3Layer_2D_275B",
+            "reload_when_selection_changes": 1,
+            "show_for_these_selected": {
+                "actions": [
+                    "test_only",
+                    "train_and_test"
+                ]
+            }
         },
         "test_data_in_fold": {
             "options": [
@@ -30,7 +38,13 @@
                 5,
                 6
             ],
-            "selected": 3
+            "selected": 6,
+            "reload_when_selection_changes": 1,
+            "show_for_these_selected": {
+                "actions": [
+                    "test_only"
+                ]
+            }
         },
         "test_fold6(P6)_using_model_trained_on_data_fold": {
             "options": [
@@ -40,7 +54,15 @@
                 4,
                 5
             ],
-            "selected": 1
+            "selected": 1,
+            "show_for_these_selected": {
+                "actions": [
+                    "test_only"
+                ],
+                "test_data_in_fold": [
+                    6
+                ]
+            }
         }
     },
     "Calc and Plot Influence Scores from Learned Band-wise Mask Weights": {
@@ -99,7 +121,7 @@
                 ]
             },
             "reload_when_selection_changes": 1,
-            "selected": "P5_ROI_04",
+            "selected": "P7_ROI_02",
             "sub_groups": [
                 "F1",
                 "F2",
@@ -131,7 +153,7 @@
                 "2Layer_2D_275B",
                 "3Layer_2D_32B"
             ],
-            "selected": "3Layer_2D_32B"
+            "selected": "3Layer_2D_275B"
         },
         "results_of_P6_using_model_trained_on_data_fold": {
             "options": [

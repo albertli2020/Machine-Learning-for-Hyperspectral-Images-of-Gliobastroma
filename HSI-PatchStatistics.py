@@ -122,7 +122,7 @@ def construct_and_plot_df(stats, target_str, by_str, num_cols=4, title_str=None)
     custom_palette = {"Tumor": "red", "Tumor-Rejected":"orange", "Non-Tumor": "green", "Non-Tumor-Rejected": "yellow"}
 
     # Create horizontal stacked bar chart
-    fig = plt.figure(figsize=(8, 5))
+    fig = plt.figure(figsize=(16, 6))
     sns.barplot(x="Value", y=target_str, hue=by_str, data=df_long, orient="h", palette=custom_palette)
 
     # Labels & Title
@@ -130,7 +130,7 @@ def construct_and_plot_df(stats, target_str, by_str, num_cols=4, title_str=None)
     plt.ylabel(by_str)
     if title_str:
         plt.title(title_str, fontsize=12)
-    plt.legend(title="", bbox_to_anchor=(1, 1))  # Move legend outside
+    plt.legend(title="", bbox_to_anchor=(0.95, 1))  # Move legend outside
     fig.canvas.manager.set_window_title(f"{target_str} Distribution among {by_str}s")
     plt.show()
 

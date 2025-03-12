@@ -16,6 +16,7 @@ from HSI_Dataset import HyperspectralDataset
 from HSI_Core2DCNN import TumorClassifier2DCNN, S2L2DCNNModel
 from HSI_Workorder import HyperspectralWorkorderMLP
 from HSI_PlotModelPerf import plot_model_perf_w_radar_and_table
+from HSI_LearningCurves import plot_model_learning_curves
 
 """
 This Python program uses incremental learning through layer-wise expansion.
@@ -381,9 +382,14 @@ if __name__ == "__main__":
     print(f"{SCRIPT_NAME} with: {workorders_key}")
     if actions == 'train_and_test':
         #workorders = [dict[workorders_key][(test_data_in_fold-1)*2], dict[workorders_key][(test_data_in_fold-1)*2+1]]
-        print(" -- It would take much longer than a couple minutes to run training and test on this hardware.")
-        print(" -- Instead of actual training and test, here are the plots of the model's performance metrics.")
-        plot_model_perf_w_radar_and_table(nn_arch) 
+        print(" -- It would take much longer than a couple minutes to run train and test on this hardware.")
+        print(" -- Instead of running actual train and test, here are the plots of the model's performance metrics.")
+        plot_model_perf_w_radar_and_table(nn_arch)
+    elif actions == "train_and_val":
+        nn_arch = "3Layer_2D_275B"
+        print(" -- It would take much longer than a couple minutes to run train and validation on this hardware.")
+        print(f" -- Instead of runing actual train and validation, here are the learning curves of {nn_arch} train and validation across 5 folds.")
+        plot_model_learning_curves(nn_arch)
     else:
         #print(dict[workorders_key])
         workorders = [dict[workorders_key][test_data_in_fold-1]]
