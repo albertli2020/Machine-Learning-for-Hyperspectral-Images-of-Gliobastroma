@@ -13,6 +13,7 @@ input_spectral_bands_27 = list(chain(range(0, 4), range(90, 96), range(128, 141)
 input_spectral_bands_32 = list(chain(range(0, 4), range(90, 96), range(128, 150))) #4+6+22
 #input_spectral_bands_32R = list(chain(range(0, 4), range(128, 150), range(269, 275))) #4+22+6
 input_spectral_bands_32R = list(chain(range(0, 3), range(84, 92), range(128, 143), range(145, 151))) #3+8+15+6=35
+input_spectral_bands_16 = [0, 2, 33, 88, 89, 91, 132, 133, 134, 135, 137, 138, 139, 140, 142, 145]
 input_spectral_bands_bgr = [b_band, g_band, r_band]
 input_spectral_bands_1red = [r_band]
 
@@ -110,6 +111,13 @@ global_specifier_2D_32B_ROI_F13 = {'nn_arch_name': '2D_32B', 'data_fold_type': '
 global_specifier_2D_32B_ROI_F14 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32B_ROI_F15 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2D_32B_ROI_F16 = {'nn_arch_name': '2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':32, '1st_hl_size':64}
+
+global_specifier_2D_16B_ROI_F11 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':32, '1st_hl_size':32}
+global_specifier_2D_16B_ROI_F12 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':32, '1st_hl_size':32}
+global_specifier_2D_16B_ROI_F13 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F13', 'tvt_data_fold_idx': 4+5+7, 'batch_size':32, '1st_hl_size':32}
+global_specifier_2D_16B_ROI_F14 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F14', 'tvt_data_fold_idx': 4+5+8, 'batch_size':32, '1st_hl_size':32}
+global_specifier_2D_16B_ROI_F15 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F15', 'tvt_data_fold_idx': 4+5+9, 'batch_size':32, '1st_hl_size':32}
+global_specifier_2D_16B_ROI_F16 = {'nn_arch_name': '2D_16B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F16', 'tvt_data_fold_idx': 4+5+10, 'batch_size':32, '1st_hl_size':32}
 
 global_specifier_2L2D_32B_ROI_F11 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F11', 'tvt_data_fold_idx': 4+5+5, 'batch_size':32, '1st_hl_size':64}
 global_specifier_2L2D_32B_ROI_F12 = {'nn_arch_name': '2L2D_32B', 'data_fold_type': 'ROI', 'data_fold_name': 'ROI_F12', 'tvt_data_fold_idx': 4+5+6, 'batch_size':32, '1st_hl_size':64}
@@ -256,6 +264,23 @@ work_orders_32B_train_and_val = [
     {'train_or_test':0, 'bands_to_use':input_spectral_bands_32, 'global_specifier': global_specifier_2D_32B_ROI_F15, 'min_accuracy':0.40},
     ]
 
+work_orders_16B_train_and_val = [
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F11, 'min_accuracy':0.40}, 
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F13, 'min_accuracy':0.40}, 
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':0, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F15, 'min_accuracy':0.40},
+    ]
+
+work_orders_16B_test_only = [
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F11, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F12, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F13, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F14, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F15, 'min_accuracy':0.40},
+    {'train_or_test':1, 'bands_to_use':input_spectral_bands_16, 'global_specifier': global_specifier_2D_16B_ROI_F16, 'min_accuracy':0.40},
+    ]
+
 work_orders_32RB_train_and_test = [
     #{'train_or_test':0, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40}, 
     #{'train_or_test':1, 'bands_to_use':input_spectral_bands_32R, 'global_specifier': global_specifier_2D_32RB_ROI_F11, 'min_accuracy':0.40},
@@ -346,9 +371,14 @@ mlp_steps_train_and_val_for_pnn_all_layers = [
     #{'desc':'4-L to 4-L, TVT', 'nol_from':4, 'nol_new':4, 'lr':0.000025, 'noe':7},
     ]
 
-mlp_steps_train_and_val_for_pnn_3L_only = [
+mlp_steps_train_and_val_for_pnn_3L_only_inh = [
     #{'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.0005, 'noe':8},
     {'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.00001, 'noe':16} #0.00002
+    ]
+
+mlp_steps_train_and_val_for_pnn_3L_only = [
+    {'desc':'1-L from scratch, TVT', 'nol_from':0, 'nol_new':3, 'lr':0.000025, 'noe':8},
+    {'desc':'3-L to 3-L, TVT', 'nol_from':3, 'nol_new':3, 'lr':0.00001, 'noe':16}
     ]
 
 mlp_steps_train_and_val_for_pnn_s2l2d = [

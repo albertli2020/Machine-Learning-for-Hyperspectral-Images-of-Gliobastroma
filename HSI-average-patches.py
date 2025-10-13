@@ -3,11 +3,14 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+plt.rcParams.update({'font.size': 20})
+
 def get_patch_paths(folder_path, roi):
     tumor = []
     nontumor = []
     for folder in os.listdir(folder_path):
-        if not folder.startswith(roi) or folder.endswith("G") or folder.startswith("P6"):
+        if not folder.startswith(roi) or folder.endswith("G"):
             continue
         path = os.path.join(folder_path, folder)
         if folder.endswith("NT"):
@@ -46,17 +49,18 @@ read_from_file = True
 show_bars = False
 
 plt.ion()
-fig, axes = plt.subplots(2, 4, figsize=(18, 10))
+fig, axes = plt.subplots(1, 1, figsize=(18, 10))
+plt.subplots_adjust(wspace=0.4, hspace=0.4) 
 t_total_avg = []
 t_total_std = []
 nt_total_avg = []
 nt_total_std = []
 
 
-for patient_idx in range(1, 9):
-    if(patient_idx == 6):
-        continue
-    row = math.floor((patient_idx - 1) / 4)
+for patient_idx in range(8, 9):
+    #if(patient_idx == 6):
+    #    continue
+    row = math.floor((patient_idx - 1) / 2)
     if read_from_file:
         t_avg = np.load(os.path.join(output, f"Patient_{patient_idx}_T_avg.npy"))
         t_std = np.load(os.path.join(output, f"Patient_{patient_idx}_T_std.npy"))
@@ -64,16 +68,17 @@ for patient_idx in range(1, 9):
         nt_std = np.load(os.path.join(output, f"Patient_{patient_idx}_NT_std.npy"))
 
         if(show_bars):
-            axes[row, patient_idx - 1 - row * 4].errorbar(band_array, t_avg, yerr=t_std, marker = ".", elinewidth = 5, alpha = 0.05, label="Tumor")
-            axes[row, patient_idx - 1 - row * 4].errorbar(band_array, nt_avg, yerr=nt_std, marker = ".", elinewidth = 5, alpha = 0.05, label="Non-Tumor")
-        else:
-            axes[row, patient_idx - 1 - row * 4].plot(band_array, t_avg, marker = ".", alpha = 0.35, label = "Tumor")
-            axes[row, patient_idx - 1 - row * 4].plot(band_array, nt_avg, marker = ".", alpha = 0.35, label = "Non-Tumor")
-        axes[row, patient_idx - 1 - row * 4].set_xlabel("Wavelength (nm)")
-        axes[row, patient_idx - 1 - row * 4].set_ylabel("Average Intensity")
-        axes[row, patient_idx - 1 - row * 4].set_title(f"Average Intensity for Patient {patient_idx}", fontsize = 12)
-        axes[row, patient_idx - 1 - row * 4].legend()
+            axes[row, patient_idx - 1 - row * 2].errorbar(band_array, t_avg, yerr=t_std, marker = ".", elinewidth = 5, alpha = 0.05, label="Tumor")
+            axes[row, patient_idx - 1 - row * 2].errorbar(band_array, nt_avg, yerr=nt_std, marker = ".", elinewidth = 5, alpha = 0.05, label="Non-Tumor")
+        else:   
+            axes.plot(band_array, t_avg, marker = ".", alpha = 0.35, label = "Tumor")
+            axes.plot(band_array, nt_avg, marker = ".", alpha = 0.35, label = "Non-Tumor")
+        axes.set_xlabel("Wavelength (nm)")
+        axes.set_ylabel("Average Intensity")
+        axes.set_title(f"Average Intensity for Patient {patient_idx}", fontsize = 25)
+        axes.legend()
         plt.pause(0.1)
+
 
 
     else:
@@ -142,7 +147,7 @@ plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.ioff()
 plt.tight_layout()
 plt.show()
-
+'''
 
 if(read_from_file):
     t_avg = np.load(os.path.join(output, f"Total_T_avg.npy"))
@@ -197,4 +202,5 @@ else:
 
 
 plt.grid()
-plt.show()
+plt.show()'
+'''

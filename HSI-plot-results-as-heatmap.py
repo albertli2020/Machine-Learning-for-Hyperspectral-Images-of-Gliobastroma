@@ -231,15 +231,18 @@ def read_csv_and_create_heatmap_for_cube(data, cube, expected_label, num_rejecte
     ax.set_ylim(height, 0)
     ax.set_xticks([])
     ax.set_yticks([])
+    ax.set_xlabel('')
     counts_str = f"NT:{count_results[0]}, T:{count_results[1]}, I:{count_results[2]}, R:{count_results[3]}"
-    plt.title(cube.split("_")[3] + " {" + counts_str +"}", fontsize=15)
-
+    plt.title(cube.split("_")[3] + " {" + counts_str +"}", y=1.04, fontsize=15)
+    fig.tight_layout(pad=0)
+    fig.subplots_adjust(left=0.005, right=0.995, top=1.0, bottom=0.0)
     # Save the figure into an image object (in memory)
     canvas = FigureCanvas(fig)
     canvas.draw()
 
     # Save the image to a NumPy array
     width, height = fig.get_size_inches() * fig.get_dpi()
+    #print("W & H: ", width, height)
     img = np.frombuffer(canvas.tostring_rgb(), dtype='uint8').reshape(int(height), int(width), 3)
 
     plt.close(fig)
@@ -257,7 +260,7 @@ def create_plots_in_grid(max_cols, cube_images, window_str, title_str, nn_arch_f
         cols = max_cols  # Number of columns (adjust as needed)
         rows = (N + cols - 1) // cols  # Calculate the required rows based on N and cols
     
-    fig, axs = plt.subplots(rows, cols, figsize=(max(cols * 3, 3), max(rows * 3, 3)))
+    fig, axs = plt.subplots(rows, cols, figsize=(max(cols * 2, 2), max(rows * 2, 2)))
     if N == 1:
         axs = np.array([[axs]])
     elif rows == 1:
@@ -270,25 +273,29 @@ def create_plots_in_grid(max_cols, cube_images, window_str, title_str, nn_arch_f
         # Display the image in the subplot
         ax.imshow(img)
         ax.axis('off')  # Turn off axis
+        ax.set_frame_on(False) 
 
     # Remove any empty subplots if N < rows * cols
     for i in range(N, rows * cols):
         axs[i // cols, i % cols].axis('off')
     
     # Reduce spacing
-    plt.subplots_adjust(left=0.0, right=1.0, top=0.99, bottom=0.1, wspace=0.0, hspace=0.0)
+    plt.subplots_adjust(left=0.01, right=.99, top=0.999, bottom=0.04, wspace=0.0, hspace=0.0)
 
     # Add a shared color bar across all subplots
-    cax = fig.add_axes([0.1, 0.1, 0.8, 0.03])  # [x, y, w, h]
+    cax = fig.add_axes([0.1, 0.04, 0.8, 0.01])  # [x, y, w, h]
     cmap = cm.get_cmap('RdBu_r')
     norm = Normalize(vmin=0.0, vmax=1.0)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     cbar = fig.colorbar(sm, cax=cax, shrink=0.5, orientation='horizontal')
     cbar.set_ticks([0, 0.5, 1])
-    cbar.set_ticklabels(['Non-Tumor (Blue)', 'Rejected (Diag Line in Red) / Indeterminate', 'Tumor (Red)'])
+    cbar.ax.tick_params(labelsize=8)
+    cbar.set_ticklabels(['Non-Tumor', 'Rejected (Diag Line in Red) / Indeterminate', 'Tumor'])
     
-    fig.suptitle(title_str, fontsize=12)
-    fig.canvas.manager.set_window_title(f"Classification Results as Heatmap for {window_str} from Using the {nn_arch_fold_str} Model")
+    #fig.suptitle(title_str, fontsize=12)
+    #fig.canvas.manager.set_window_title(f"Classification Results as Heatmap for {window_str} from Using the {nn_arch_fold_str} Model")
+    fig.canvas.manager.set_window_title(f"{window_str}_w_{nn_arch_fold_str}_{title_str}")
+    plt.savefig(f"{window_str}_w_{nn_arch_fold_str}_{title_str}.pdf", dpi=600, transparent=True)
     # Show the plot
     plt.show()
 
@@ -334,7 +341,7 @@ def load_config():
     return script_config
 
 max_num_cubes = 18
-max_cols = 6
+max_cols = 3
 if __name__ == "__main__":
     # Load script-specific parameters
     config = load_config()
@@ -412,14 +419,14 @@ if __name__ == "__main__":
         
         if total_counts[1] > total_counts[0]: # +  total_counts[2]:
             perc = total_counts[1] / (total_counts[1] + total_counts[0])
-            roi_result = f"Tumor ({perc*100:.2f}%)"
+            roi_result = f"Tumor_p{int(perc*10000)}"
         elif total_counts[0] > total_counts[1]: # +  total_counts[2]:
             perc = total_counts[0] / (total_counts[1] + total_counts[0])
-            roi_result = f"Non-Tumor ({perc*100:.2f}%)"
+            roi_result = f"Non-Tumor_p{int(perc*10000)}"
         else:
             roi_result = "Indeterminate"
-        total_counts_str = f"NT:{total_counts[0]}, T:{total_counts[1]}, I:{total_counts[2]}, R:{total_counts[3]}"
-        title_str = "ROI-level Aggregated Assessment: " + roi_result + " {" + total_counts_str + "}"
+        total_counts_str = f"NT{total_counts[0]}_T{total_counts[1]}_I{total_counts[2]}_R{total_counts[3]}"
+        title_str = "ROI_level_Assessment_" + roi_result + "_" + total_counts_str
         if truth_label == 0:
             tnt_str = '_NT'
         else:

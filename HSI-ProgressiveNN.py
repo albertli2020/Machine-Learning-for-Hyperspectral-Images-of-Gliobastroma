@@ -312,8 +312,10 @@ workorders_dict = {
     "3Layer_2D_32B_train_and_test": HSI_Globals.work_orders_32B_train_and_test,
     "3Layer_2D_275B_train_and_val": HSI_Globals.work_orders_275B_train_and_val,
     "3Layer_2D_32B_train_and_val": HSI_Globals.work_orders_32B_train_and_val,
+    "3Layer_2D_16B_train_and_val": HSI_Globals.work_orders_16B_train_and_val,
     "3Layer_2D_275B_test_only": HSI_Globals.work_orders_275B_test_only,
-    "3Layer_2D_32B_test_only": HSI_Globals.work_orders_32B_test_only
+    "3Layer_2D_32B_test_only": HSI_Globals.work_orders_32B_test_only,
+    "3Layer_2D_16B_test_only": HSI_Globals.work_orders_16B_test_only
 }
 workorders_dict_s2l2d = {
     #"275B_train_and_test": HSI_Globals.work_orders_275B_s2l2d_train_and_test,
@@ -364,7 +366,7 @@ if __name__ == "__main__":
     test_F6_using_model_trained_on_data_fold = param['selected']
     
 
-    if nn_arch == "3Layer_2D_275B" or nn_arch == "3Layer_2D_32B" :
+    if nn_arch == "3Layer_2D_275B" or nn_arch == "3Layer_2D_32B" or nn_arch == "3Layer_2D_16B" :
         workorders_key = f"{nn_arch}_{actions}"
         dict = workorders_dict
         mlp_steps_train_and_val = HSI_Globals.mlp_steps_train_and_val_for_pnn_3L_only
@@ -386,10 +388,15 @@ if __name__ == "__main__":
         print(" -- Instead of running actual train and test, here are the plots of the model's performance metrics.")
         plot_model_perf_w_radar_and_table(nn_arch)
     elif actions == "train_and_val":
-        nn_arch = "3Layer_2D_275B"
-        print(" -- It would take much longer than a couple minutes to run train and validation on this hardware.")
-        print(f" -- Instead of runing actual train and validation, here are the learning curves of {nn_arch} train and validation across 5 folds.")
-        plot_model_learning_curves(nn_arch)
+        if nn_arch == "3Layer_2D_16B":
+            #workorders = [dict[workorders_key][test_data_in_fold-1]]
+            workorders = dict[workorders_key]
+            pnn_train_val_test(mlp_steps_train_and_val, mlp_steps_testonly, workorders)
+        else:
+            nn_arch = "3Layer_2D_275B"
+            print(" -- It would take much longer than a couple minutes to run train and validation on this hardware.")
+            print(f" -- Instead of runing actual train and validation, here are the learning curves of {nn_arch} train and validation across 5 folds.")
+            plot_model_learning_curves(nn_arch)
     else:
         #print(dict[workorders_key])
         workorders = [dict[workorders_key][test_data_in_fold-1]]
